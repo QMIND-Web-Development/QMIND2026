@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { checkPin } from "./actions";
 
 export default function LoginPage({ searchParams }: any) {
   const [error, setError] = useState(false);
@@ -15,8 +16,22 @@ export default function LoginPage({ searchParams }: any) {
   const [password, setPassword] = useState("");
   const [passwordCheck, setPasswordCheck] = useState("");
   const [loading, setLoading] = useState(false);
+  const [authorized, setAuthorized] = useState(false);
+  const [pin, setPin] = useState("");
+
   const supabase = createClient();
   const router = useRouter();
+
+  const handleAuthorization = async () => {
+    const check = await checkPin(pin);
+    if (!check) {
+      setError(true);
+    } else if (check) {
+      setAuthorized(true);
+      setError(false);
+    }
+  }
+
   const handleSignup = async () => {
     setLoading(true);
 
@@ -56,72 +71,110 @@ export default function LoginPage({ searchParams }: any) {
             <CardTitle className="text-4xl">Project Manager Sign Up.</CardTitle>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col max-w-[500px] w-[80vw] items-center gap-[15px]">
-            <div className="w-full">
-              <Label htmlFor="email">Email:</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="Email Address"
-                defaultValue={email}
-                onChange={(e) => {
-                  setError(false);
-                  setEmail(e.target.value);
-                }}
-                required
-                className="w-[100%] min-h-[58px] text-lg"
-              />
+        { authorized ?
+          <CardContent>
+            <div className="flex flex-col max-w-[500px] w-[80vw] items-center gap-[15px]">
+              <div className="w-full">
+                <Label htmlFor="email">Email:</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="Email Address"
+                  defaultValue={email}
+                  onChange={(e) => {
+                    setError(false);
+                    setEmail(e.target.value);
+                  }}
+                  required
+                  className="w-[100%] min-h-[58px] text-lg"
+                />
+              </div>
+              <div className="w-[100%]">
+                <label htmlFor="password">Password:</label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => {
+                    setError(false);
+                    setPassword(e.target.value);
+                  }}
+                  required
+                  className="w-[100%] min-h-[58px] text-lg"
+                />
+              </div>
+              <div className="w-[100%]">
+                <label htmlFor="confirm_password">Confirm Password:</label>
+                <Input
+                  id="confirm_password"
+                  name="confirm_password"
+                  type="password"
+                  placeholder="Confirm Password"
+                  required
+                  className="w-[100%] min-h-[58px] text-lg"
+                  onChange={(e) => {
+                    setError(false);
+                    setPasswordCheck(e.target.value);
+                  }}
+                  value={passwordCheck}
+                />
+              </div>
+              {error && (
+                <p className="text-destructive">
+                  Error Registering Account.
+                  <br />
+                  Make sure passwor is atleast 6 characters long
+                </p>
+              )}
+              <Button
+                disabled={loading}
+                onClick={() => handleSignup()}
+                className="mt-[15px] w-[100%] text-lg py-[25px]"
+              >
+                Sign Up
+              </Button>
             </div>
-            <div className="w-[100%]">
-              <label htmlFor="password">Password:</label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => {
-                  setError(false);
-                  setPassword(e.target.value);
-                }}
-                required
-                className="w-[100%] min-h-[58px] text-lg"
-              />
+          </CardContent>
+          :
+          <CardContent>
+            <div className="flex flex-col max-w-[500px] w-[80vw] items-center gap-[15px]">
+            <>YOU ARE NOT AUTHORIZED!</>
+              <div className="w-full">
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="Enter PM Pin"
+                  defaultValue={pin}
+                  onChange={(e) => {
+                    setError(false);
+                    setPin(e.target.value);
+                  }}
+                  required
+                  className="w-[100%] min-h-[58px] text-lg"
+                />
+              </div>
+              
+              
+              {error && (
+                <p className="text-destructive">
+                  wrong pin! are you sure you are a PM?
+                </p>
+              )}
+              <Button
+                disabled={loading}
+                onClick={() => handleAuthorization()}
+                className="mt-[15px] w-[100%] text-lg py-[25px]"
+              >
+                Gain Access
+              </Button>
             </div>
-            <div className="w-[100%]">
-              <label htmlFor="confirm_password">Confirm Password:</label>
-              <Input
-                id="confirm_password"
-                name="confirm_password"
-                type="password"
-                placeholder="Confirm Password"
-                required
-                className="w-[100%] min-h-[58px] text-lg"
-                onChange={(e) => {
-                  setError(false);
-                  setPasswordCheck(e.target.value);
-                }}
-                value={passwordCheck}
-              />
-            </div>
-            {error && (
-              <p className="text-destructive">
-                Error Registering Account.
-                <br />
-                Make sure passwor is atleast 6 characters long
-              </p>
-            )}
-            <Button
-              disabled={loading}
-              onClick={() => handleSignup()}
-              className="mt-[15px] w-[100%] text-lg py-[25px]"
-            >
-              Sign Up
-            </Button>
-          </div>
-        </CardContent>
+          </CardContent>
+        }
+        
       </Card>
     </Container>
   );
