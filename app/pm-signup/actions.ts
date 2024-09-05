@@ -1,4 +1,13 @@
-// "use server";
+"use server";
+
+
+export async function checkPin(pin: String) {
+    if (pin == "76463") {
+        return true;
+    } else {
+        return false;
+    }
+}
 
 // import { revalidatePath } from "next/cache";
 // import { redirect } from "next/navigation";
