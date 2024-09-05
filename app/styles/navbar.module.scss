@@ -1,0 +1,64 @@
+.navLinks {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: -0.8px;
+  text-transform: uppercase;
+
+  // md in tailwind
+  @media only screen and (max-width: 768px) {
+    background: linear-gradient(224deg, #262626 0%, #161616 65.63%);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-size: 24px;
+  }
+}
+
+.mobileBg {
+  background: transparent !important;
+}
+
+.navLinks a {
+  color: #f7f7f7;
+  opacity: 0.5;
+  filter: drop-shadow(0 0 5px rgba(22, 22, 22, 1));
+}
+.navLinks a:hover {
+  background: linear-gradient(#f0b542, #f0b54280);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 1;
+}
+
+.activePage {
+  background: linear-gradient(#f0b542, rgba(240, 181, 66, 0.5));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 1 !important;
+}
+
+.navLinks a:active {
+  background: linear-gradient(rgba(240, 181, 66, 1), rgba(240, 181, 66, 0.5));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0.5;
+}
+
+.close svg {
+}
+
+.navbarBg {
+  filter: drop-shadow(0 0 10px rgba(22, 22, 22, 1));
+}
+
+.navMobileOpenBg {
+  @media only screen and (max-width: 1023px) {
+    background: linear-gradient(224deg, #262626 0%, #161616 65.63%);
+  }
+}
