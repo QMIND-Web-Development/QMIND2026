@@ -153,6 +153,16 @@ function Members() {
           class: "leadershipCardOperations",
           social: "https://www.linkedin.com/in/adwait-srivastava/",
         },
+
+
+        {
+          name: "Connor Pineault",
+          title: "Web Developer",
+          img: "/headshots/Adwait_Srivastava.png",
+          class: "leadershipCardOperations",
+          social: "https://www.linkedin.com/in/connorpineault/",
+        },
+
       ],
     },
   ];
