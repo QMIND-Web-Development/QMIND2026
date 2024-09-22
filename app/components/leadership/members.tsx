@@ -160,7 +160,7 @@ function Members() {
           title: "Web Developer",
           img: "/headshots/Adwait_Srivastava.png",
           class: "leadershipCardOperations",
-          social: "https://www.linkedin.com/in/connorpineault/",
+          social: "https://www.linkedin.com/in/connor-pineault",
         },
 
       ],
