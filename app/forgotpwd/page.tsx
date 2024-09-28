@@ -13,28 +13,25 @@ import Link from "next/link";
 export default function LoginForm() {
   const [error, setError] = useState(false);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [reset, setReset]=useState(false);
   const supabase = createClient();
   const router = useRouter();
-  const handleSignup = async () => {
-    setLoading(true);
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
-
-    if (error) {
-      setError(true);
-      setLoading(false);
-      return;
+ 
+  const sendResetPassword= async()=>{
+    try {
+      const {data: resetData, error}=await supabase
+      .auth
+      .resetPasswordForEmail(email,{
+         redirectTo: `${window.location.origin}/reset`
+      } )
+      
+      setSuccess(true)
+    } catch (error) {
+      
     }
-
-    setLoading(false);
-    router.push("/");
-  };
-
+  }
   return (
     <Container className="flex justify-center items-center pb-[70px]">
       <Card className="border-transparent md:border-white border-none p-0 m-0">
@@ -47,7 +44,7 @@ export default function LoginForm() {
               alt="logo"
             />
 
-            <CardTitle className="text-4xl">Welcome Back.</CardTitle>
+            <CardTitle className="text-4xl">Reset Password</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -65,37 +62,18 @@ export default function LoginForm() {
                 className="w-[100%] min-h-[58px] text-lg"
               />
             </div>
-            <div className="w-[100%]">
-              <label htmlFor="password">Password:</label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Password"
-                value={password}
-                disabled={loading}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-[100%] min-h-[58px] text-lg"
-              />
-            </div>
+            
             {error && (
-              <p className="text-destructive">Invalid username or password</p>
+              <p className="text-destructive">Invalid username</p>
             )}
-            <Link
-              // href={"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
-              href="/forgotpwd"
-              rel="noreferrer"
-              className="text-[#387BFF] underline pt-[10px] lg:pt-[0] text-[20px] cursor-pointer hover:opacity-60"
-            >
-              Forgot Password?
-            </Link>
+            {success &&(
+              <p className="text-success">Password reset link sent to your email!</p>
+            )}
             <Button
               disabled={loading}
-              onClick={() => handleSignup()}
-              className="mt-[15px] w-[100%] text-lg py-[25px]"
-            >
-              login
+              onClick={sendResetPassword}
+              className="mt-[15px] w-[100%] text-lg py-[25px]">
+              Send Email
             </Button>
           </div>
         </CardContent>
