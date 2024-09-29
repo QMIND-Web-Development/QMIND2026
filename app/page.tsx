@@ -44,7 +44,7 @@ import PWC1 from "@/assets/companies/PWC1.png";
 import EY1 from "@/assets/companies/EY1.png";
 import PG from "@/assets/companies/PG.png";
 import EY_LOGO from "@/assets/companies/EY_Logo.png";
-import INGENUITY_LOGO from "@/assets/companies/Ingenuity_Labs.png";
+import REDBIT_LOGO from "@/assets/companies/Redbit.png";
 import RECALC_LOGO from "@/assets/Recalc.png";
 import RBC_WHITE from "@/assets/companies/RBC_White.png";
 
@@ -298,11 +298,11 @@ const TESTIMONIALS = [
     team: "design",
     message:
       "QMIND was easily the most valuable experience of my undergraduate career. Leading projects pushed me to learn far beyond what was taught in courses, and gave me invaluable experience in overcoming the challenges of building real world applications.",
-    position: "AI Researcher",
+    position: "Lead AI Engineer",
     companyLogo: {
-      img: { src: INGENUITY_LOGO.src, style: "mt-[0px] h-[35px]" },
+      img: { src: REDBIT_LOGO.src, style: "mt-[0px] h-[35px]" },
     },
-    company: "Ingenuity Labs",
+    company: "RedBit Development",
     angle: "rotate-[0deg] md:rotate-[-2deg]",
     education: "Computer Science '23",
   },
