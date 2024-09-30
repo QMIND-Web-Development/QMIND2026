@@ -149,7 +149,7 @@ function Members() {
         {
           name: "Adwait Srivastava",
           title: "Web Developer",
-          img: "/headshots/Adwait_Srivastava.png",
+          img: "/headshots/advait.png",
           class: "leadershipCardOperations",
           social: "https://www.linkedin.com/in/adwait-srivastava/",
         },
@@ -158,9 +158,9 @@ function Members() {
         {
           name: "Connor Pineault",
           title: "Web Developer",
-          img: "/headshots/Adwait_Srivastava.png",
+          img: "/headshots/connorpineault1.png",
           class: "leadershipCardOperations",
-          social: "https://www.linkedin.com/in/connor-pineault",
+          social: "https://www.linkedin.com/in/connorpineault/",
         },
 
       ],
