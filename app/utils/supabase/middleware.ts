@@ -7,6 +7,10 @@ export async function updateSession(request: NextRequest) {
       headers: request.headers,
     },
   })
+  const publicUrls=['/reset'];
+  if (publicUrls.includes(request.nextUrl.pathname)){
+    return response;
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

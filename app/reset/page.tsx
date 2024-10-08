@@ -1,41 +1,62 @@
 "use client";
+import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import Container from "@/components/Container";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSearchParams } from "next/navigation"; 
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
-export default function LoginForm() {
+export default function ResetPasswordForm() {
   const [error, setError] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("Invalid username or password")
-  const [email, setEmail] = useState("");
+  const [errorMsg, setErrorMsg] = useState("")
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sessionEstablished, setSessionEstablished] = useState(false); // New state
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const router = useRouter();
 
-  const handleSignup = async () => {
-    setLoading(true);
+  useEffect(() => {
+    const exchangeTokenForSession = async () => {
+      const accessToken = searchParams.get("access_token"); // Use this to get the access_token query parameter
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email,
+      if (accessToken) {
+        const { error } = await supabase.auth.exchangeCodeForSession(accessToken);
+
+        // if (error) {
+        //   console.error("Error during session exchange:", error.message);
+        // } else {
+        //   setSessionEstablished(true); // Session is established
+        // }
+      }
+    };
+
+    exchangeTokenForSession();
+  }, [searchParams, supabase]);
+  const confirmPasswords = async () => {
+    if (password !== confirmPassword) {
+      return alert("Passwords do not match");
+    }
+
+
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({
       password: password,
     });
 
     if (error) {
-      setError(true);
       setErrorMsg(error.message);
-      setLoading(false);
-      return;
+      setError(true);
+    } else {
+      alert("Password updated successfully!");
+      router.push('/');
     }
-
     setLoading(false);
-    router.push("/");
   };
 
   return (
@@ -49,35 +70,32 @@ export default function LoginForm() {
               width={20}
               alt="logo"
             />
-
-            <CardTitle className="text-4xl">Welcome Back.</CardTitle>
+            <CardTitle className="text-4xl">Enter your new password</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col max-w-[500px] w-[80vw] items-center gap-[15px]">
             <div className="w-full">
-              <Label htmlFor="email">Email:</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="Email Address"
-                defaultValue={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-[100%] min-h-[58px] text-lg"
-              />
-            </div>
-            <div className="w-[100%]">
-              <label htmlFor="password">Password:</label>
+              <Label htmlFor="email">New Password:</Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
                 placeholder="Password"
-                value={password}
-                disabled={loading}
                 onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-[100%] min-h-[58px] text-lg"
+              />
+            </div>
+            <div className="w-[100%]">
+              <label htmlFor="password">Confirm New Password:</label>
+              <Input
+                id="confirmpassword"
+                name="confirmpassword"
+                type="password"
+                placeholder="Confirm Password"
+                disabled={loading}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 className="w-[100%] min-h-[58px] text-lg"
               />
@@ -85,20 +103,12 @@ export default function LoginForm() {
             {error && (
               <p className="text-destructive">{errorMsg}</p>
             )}
-            <Link
-              // href={"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
-              href="/forgotpwd"
-              rel="noreferrer"
-              className="text-[#387BFF] underline pt-[10px] lg:pt-[0] text-[20px] cursor-pointer hover:opacity-60"
-            >
-              Forgot Password?
-            </Link>
             <Button
               disabled={loading}
-              onClick={() => handleSignup()}
+              onClick={confirmPasswords}
               className="mt-[15px] w-[100%] text-lg py-[25px]"
             >
-              login
+              Confirm
             </Button>
           </div>
         </CardContent>
