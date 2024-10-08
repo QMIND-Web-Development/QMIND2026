@@ -11,11 +11,13 @@ import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
   const [error, setError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("Invalid username or password")
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
   const router = useRouter();
+
   const handleSignup = async () => {
     setLoading(true);
 
@@ -26,6 +28,7 @@ export default function LoginForm() {
 
     if (error) {
       setError(true);
+      setErrorMsg(error.message);
       setLoading(false);
       return;
     }
@@ -79,7 +82,7 @@ export default function LoginForm() {
               />
             </div>
             {error && (
-              <p className="text-destructive">Invalid username or password</p>
+              <p className="text-destructive">{errorMsg}</p>
             )}
             <Button
               disabled={loading}
