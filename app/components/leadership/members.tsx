@@ -158,7 +158,7 @@ function Members() {
         {
           name: "Connor Pineault",
           title: "Web Developer",
-          img: "/headshots/connor_pineault.png",
+          img: "/headshots/Connor_Pineault.png",
           class: "leadershipCardOperations",
           social: "https://www.linkedin.com/in/connorpineault/",
         },
