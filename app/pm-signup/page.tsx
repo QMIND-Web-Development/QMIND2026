@@ -8,6 +8,14 @@ import Image from "next/image";
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogHeader,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+  DialogDescription,
+} from "../components/ui/dialog";
 
 export default function LoginPage({ searchParams }: any) {
   const [error, setError] = useState(false);
@@ -15,8 +23,10 @@ export default function LoginPage({ searchParams }: any) {
   const [password, setPassword] = useState("");
   const [passwordCheck, setPasswordCheck] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const supabase = createClient();
   const router = useRouter();
+
   const handleSignup = async () => {
     setLoading(true);
 
@@ -34,11 +44,13 @@ export default function LoginPage({ searchParams }: any) {
     if (error) {
       setError(true);
       setLoading(false);
+      console.log(error)
       return;
     }
 
     setLoading(false);
-    router.push("/");
+    setIsOpen(true)
+    
   };
 
   return (
@@ -46,6 +58,32 @@ export default function LoginPage({ searchParams }: any) {
       <Card className="border-transparent md:border-white border-none p-0 m-0">
         <CardHeader>
           <div className="flex gap-[20px] items-center">
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                <DialogContent
+                  hideCloseButton={true}
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                  onInteractOutside={(e) => router.push('/')}
+                  onEscapeKeyDown={(e) => e.preventDefault()}
+                  className="w-[auto] min-w-[300px] rounded-[.5rem]"
+                >
+                  <DialogHeader>
+                    <DialogTitle className="text-3xl text-left">
+                      Please Verify Your Email
+                    </DialogTitle>
+                    <DialogDescription className="text-xl text-left">
+                      Verify your email before signing in!
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="w-[100%] flex justify-center mt-[10px]">
+                    <Button
+                      className="px-[20px] w-full"
+                      onClick={() => router.push('/')}
+                    >
+                      Go to Home
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             <Image
               src={"/icons/qmind_logo.png"}
               height={34}
@@ -110,7 +148,7 @@ export default function LoginPage({ searchParams }: any) {
               <p className="text-destructive">
                 Error Registering Account.
                 <br />
-                Make sure passwor is atleast 6 characters long
+                Make sure password is at least 6 characters long
               </p>
             )}
             <Button
@@ -126,3 +164,4 @@ export default function LoginPage({ searchParams }: any) {
     </Container>
   );
 }
+//76463
