@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 
 export default function ResetPasswordForm() {
   const [error, setError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("")
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -49,10 +50,11 @@ export default function ResetPasswordForm() {
     });
 
     if (error) {
-      console.error("Error updating password:", error.message);
+      setErrorMsg(error.message);
       setError(true);
     } else {
       alert("Password updated successfully!");
+      router.push('/');
     }
     setLoading(false);
   };
@@ -99,7 +101,7 @@ export default function ResetPasswordForm() {
               />
             </div>
             {error && (
-              <p className="text-destructive">Error resetting password</p>
+              <p className="text-destructive">{errorMsg}</p>
             )}
             <Button
               disabled={loading}
