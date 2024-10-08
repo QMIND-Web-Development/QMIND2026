@@ -410,7 +410,13 @@ export default function Home() {
                 isExternalLink={true}
                 className={`min-w-[200px] !text-[13px] justify-center ${tradeGothic.className}`}
                 text="WORK WITH US"
-                href="mailto:partnerships@qmind.ca"
+                href="mailto:design@qmind.ca"
+              />
+              <BtnLink
+                isExternalLink={true}
+                className={`min-w-[200px] !text-[13px] justify-center ${tradeGothic.className}`}
+                text="BECOME A SPONSOR"
+                href="mailto:operations@qmind.ca"
               />
               <BtnLink
                 isExternalLink={true}

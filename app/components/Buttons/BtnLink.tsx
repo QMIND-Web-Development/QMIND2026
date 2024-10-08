@@ -9,13 +9,13 @@ function BtnLink({ text, href, className, isExternalLink }: CTAProps) {
       rel={isExternalLink ? "noreferrer" : ""}
       target={isExternalLink ? "_blank" : ""}
       className={cn(
-        ` min-w-[140px] text-center bg-[#F7F7F7] rounded-[5px] tertiary-colour py-[14px] md:py-[9px] px-[13px] md:px-[20px] lg:px-[35px] font-bold tracking-[1.6px] leading-none text-[10px] md:text-[11px] lg:text-[16px] font-gothic flex items-center`,
+        ` min-w-[140px] bg-[#F7F7F7] rounded-[5px] tertiary-colour h-[35px] px-[13px] md:px-[20px] lg:px-[35px] flex justify-center items-center`,
         styles.ctaHover,
         className
       )}
       href={href}
     >
-      {text}
+      <p className="font-gothic font-bold text-[10px] md:text-[11px] lg:text-[14px] tracking-[1.6px] leading-none text-center mt-[2px]">{text}</p>
     </Link>
   );
 }
