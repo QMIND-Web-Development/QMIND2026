@@ -9,6 +9,7 @@ import { useState } from "react";
 import type { Metadata } from "next";
 import { GlobalContextProvider } from "@/Context/store";
 import { ThemeProvider } from "./providers/theme-provider";
+import { Suspense } from "react";
 
 const sofia_sans = Sofia_Sans({ subsets: ["latin"], variable: "--font-sofia" });
 
@@ -56,7 +57,11 @@ export default function RootLayout({
               >
                 <Navbar />
                 <div className="flex flex-col min-h-[100vh] h-[100%] justify-between">
-                  <div className="pt-[72px] md:pt-[100px]">{children}</div>
+                  <div className="pt-[72px] md:pt-[100px]">
+                    <Suspense fallback={<p> Loading... </p>}>
+                      {children}
+                    </Suspense>
+                  </div>
                   <Footer />
                 </div>
               </ThemeProvider>
