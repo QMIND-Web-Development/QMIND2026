@@ -1,0 +1,11 @@
+.users-container {
+  display: flex;
+  padding: 32px;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+  border-radius: 16px;
+  border: 1px solid #4E4E4E;
+  background: #1E1E1E;
+  margin-bottom: 20px;
+}

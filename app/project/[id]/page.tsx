@@ -1,13 +1,12 @@
 import React, { Suspense } from "react";
 import Container from "../../components/Container";
-import "@/styles/page.scss";
 import { createClient, downloadAllTeamImages } from "@/utils/supabase/server";
-import PhotoGallary from "@/components/photoGallery";
+import PhotoGallery from "@/components/PhotoGallery/PhotoGallery";
 import { downloadAllImages } from "@/utils/supabase/server";
 import ProjectDescription from "@/components/ProjectDescription/ProjectDescription";
 import EditProject from "@/components/Edit/editProject";
 import Tags from "@/components/Tags/tags";
-import SocialLinks from "@/components/socials/socialLinks";
+import SocialLinks from "@/components/SocialLinks/socialLinks";
 import ProjectHeader from "@/components/ProjectHeader/projectHeader";
 import TeamPhotos from "@/components/TeamPhotos/TeamPhotos";
 
@@ -61,7 +60,7 @@ async function page({ params }: any) {
         <Tags project={project} />
 
         {/*Images of the project*/}
-        <PhotoGallary project={project} images={projectImages} />
+        <PhotoGallery project={project} images={projectImages} />
 
         {/* Content of the project */}
         <div className="mt-[50px] mb-[20px] w-full">

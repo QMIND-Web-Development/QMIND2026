@@ -13,6 +13,8 @@ import {
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { cn } from "@/lib/utils";
 
+import './tags.css';
+
 function Tags({ project }: any) {
   const {
     isEditing,

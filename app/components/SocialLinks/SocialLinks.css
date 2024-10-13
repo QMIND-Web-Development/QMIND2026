@@ -1,0 +1,42 @@
+.item-social{
+  h1{
+      color: #6E6E6E;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 600;
+      line-height: 100%; /* 16px */
+      text-transform: uppercase;
+      @media only screen and (max-width: 390px) {
+          font-size: 12px;
+      }
+  }
+
+  @media only screen and (max-width: 1530px){
+    margin: 0px;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 100%; /* 16px */
+    text-transform: uppercase;
+  }
+}
+
+.item-social2{
+  padding-left: 20px;
+}
+
+
+.info{
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #6E6E6E;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 100%; /* 16px */
+  text-transform: uppercase;
+  display: flex;
+  flex-direction: column;
+
+ 
+}

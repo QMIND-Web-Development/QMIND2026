@@ -1,8 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+
 import { sofia_sans } from "@/font";
-function Members() {
+
+import './LeadershipCards.css'
+
+function LeadershipCards() {
   const leadership = [
     {
       title: "Managing Directors",
@@ -220,4 +224,4 @@ function Members() {
   );
 }
 
-export default Members;
+export default LeadershipCards;
