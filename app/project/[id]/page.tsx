@@ -6,7 +6,7 @@ import { downloadAllImages } from "@/utils/supabase/server";
 import ProjectDescription from "@/components/ProjectDescription/ProjectDescription";
 import EditProject from "@/components/Edit/editProject";
 import Tags from "@/components/Tags/tags";
-import SocialLinks from "@/components/SocialLinks/socialLinks";
+import SocialLinks from "@/components/SocialLinks/SocialLinks";
 import ProjectHeader from "@/components/ProjectHeader/projectHeader";
 import TeamPhotos from "@/components/TeamPhotos/TeamPhotos";
 

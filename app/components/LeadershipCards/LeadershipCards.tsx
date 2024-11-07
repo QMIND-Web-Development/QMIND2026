@@ -167,6 +167,14 @@ function LeadershipCards() {
           social: "https://www.linkedin.com/in/connorpineault/",
         },
 
+        {
+          name: "Nick Del Aguila",
+          title: "Web Developer",
+          img: "/headshots/Nicolas_Aguila.png",
+          class: "leadershipCardOperations",
+          social: "https://www.linkedin.com/in/nickdelaguila/",
+        },
+
       ],
     },
   ];
