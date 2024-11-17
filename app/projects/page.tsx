@@ -17,6 +17,8 @@ export default async function Projects({ searchParams }: any) {
   const isSearching = searchParams?.search;
 
 
+  console.log(data);
+
   const previewMap = {} as any;
 
   data?.forEach(async (project) => {

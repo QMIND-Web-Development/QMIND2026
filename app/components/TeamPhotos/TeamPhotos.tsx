@@ -147,9 +147,9 @@ function TeamPhotos({ project, members }: any) {
 
   return (
     <div>
-      <h1 className="text-[#6E6E6E] text-center md:text-left mb-2">
+      <h4 className="text-[#6E6E6E] text-center md:text-left mb-2 font-bold">
         Contributing Team - Click to connect!
-      </h1>
+      </h4>
 
       {/* Project Member photos */}
       <div className="flex flex-wrap justify-start gap-[10px] min-h-[100px]">

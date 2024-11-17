@@ -10,6 +10,8 @@ import SocialLinks from "@/components/SocialLinks/SocialLinks";
 import ProjectHeader from "@/components/ProjectHeader/projectHeader";
 import TeamPhotos from "@/components/TeamPhotos/TeamPhotos";
 
+import './page.css'
+
 async function page({ params }: any) {
   const supabase = createClient();
   const projectQuery = await supabase
