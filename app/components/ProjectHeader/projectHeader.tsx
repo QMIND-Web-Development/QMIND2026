@@ -34,6 +34,7 @@ function ProjectHeader({ project }: any) {
             checked={published}
             onClick={() => setPublished(!published)}
             id="publish"
+            className="border-[1px] border-white"
           />
         </div>
       )}
