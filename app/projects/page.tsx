@@ -16,7 +16,6 @@ export default async function Projects({ searchParams }: any) {
     .ilike("projectTitle", `%${searchParams?.search || ""}%`);
   const isSearching = searchParams?.search;
 
-
   console.log(data);
 
   const previewMap = {} as any;
@@ -70,7 +69,14 @@ export default async function Projects({ searchParams }: any) {
       </div>
 
       <div className="flex flex-col gap-[50px] mb-[50px]">
-        <ProjectFilters />
+        <div className="flex flex-row w-full gap-4">
+          <div className="flex-grow">
+            <ProjectFilters />
+          </div>
+          <div className="mt-5">
+            {user && !isSearching && <AddProject />}
+          </div>
+        </div>
         <div className="flex flex-col gap-[20px]">
           {data &&
             data.filter(
@@ -97,8 +103,6 @@ export default async function Projects({ searchParams }: any) {
                   previewMap={previewMap}
                 />
               ))}
-
-          {user && !hasProject && !isSearching && <AddProject />}
         </div>
       </div>
     </Container>
