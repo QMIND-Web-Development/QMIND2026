@@ -16,27 +16,34 @@ function AddProject() {
     const userRes = await supabase.auth.getUser();
     const { data, error } = await supabase
       .from("projects")
-      .insert({ pmEmail: userRes?.data?.user?.email || "No_Email" });
+      .insert({ 
+        pmEmail: userRes?.data?.user?.email || "No_Email",
+        published: true
+      })
+      .select();
 
     if (error) {
       alert("Failed to create new project");
+      setLoading(false);
+      return;
     }
 
+    const newProjectId = data[0].id;
     setLoading(false);
 
-    router.refresh();
+    router.push(`/project/${newProjectId}?edit=true`);
   };
 
   return (
     <Button
-      className="w-auto max-w-fit mx-auto px-[25px] bg-[#f0b542] text-black hover:bg-[#d99a3a] hover:text-black hover:scale-105 transition-all duration-200"
+      className="w-fit bg-[#f0b542] text-black hover:bg-[#d99a3a] hover:text-black hover:scale-105 transition-all duration-200"
       variant={"outline"}
       disabled={loading}
       onClick={() => handleAddProject()}
     >
       {loading ? (
         <svg
-          className="animate-spin -ml-1 mr-3 h-5 w-5 text-black"
+          className="animate-spin h-5 w-5 text-black"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"

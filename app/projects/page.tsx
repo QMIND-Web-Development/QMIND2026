@@ -82,7 +82,7 @@ export default async function Projects({ searchParams }: any) {
             data.filter(
               (project) =>
                 project.published ||
-                userRes?.data?.user?.email == project.pmEmail
+                (userRes?.data?.user?.email == project.pmEmail && project.published)
             ).length <= 0 && (
               <div className="w-full flex justify-center mb-[100px]">
                 <Label className="text-3xl">Projects Coming Soon...</Label>
@@ -94,7 +94,7 @@ export default async function Projects({ searchParams }: any) {
               .filter(
                 (project) =>
                   project.published ||
-                  (userRes && userRes?.data?.user?.email == project.pmEmail)
+                  (userRes?.data?.user?.email == project.pmEmail && project.published)
               )
               .map((project, key) => (
                 <ProjectCard

@@ -9,7 +9,8 @@ import { DialogTitle } from "@radix-ui/react-dialog";
 import { useDebounce, useDebouncedCallback } from "use-debounce";
 import LOADING from "@/assets/icons/loading.png";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { set } from "react-hook-form";
 function EditProject({ project }: any) {
   const {
     handleSaveProject,
@@ -20,6 +21,14 @@ function EditProject({ project }: any) {
   } = useGlobalContext();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("edit") === "true") {
+      setIsEditing(true);
+    }
+  }, [searchParams, setIsEditing]);
+
   const handleEditState = (e: any) => {
     if (!isEditing) {
       setIsEditing(true);
