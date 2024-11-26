@@ -26,7 +26,7 @@ function ProjectHeader({ project }: any) {
   return (
     <>
       {isEditing && (
-        <div className="w-full flex justify-end items-center gap-[15px] pb-[20px]">
+        <div className="w-full flex justify-left items-center gap-[15px] pb-[40px] mt-[20]]">
           <Label htmlFor="publish">
             {published ? "Published" : "Unpublished"}
           </Label>

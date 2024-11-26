@@ -26,8 +26,10 @@ function SocialLinks({ project }: any) {
             target="_blank"
             className="hover:text-[skyblue] text-center md:text-left w-[100%] flex gap-[5px] items-center md:justify-start justify-center"
           >
-            {githubUrl}
-          </Link>
+          {githubUrl.length > 30
+            ? `${githubUrl.slice(0, 19)}...`
+            : githubUrl}
+        </Link>
         ) : (
           <div>
             <Input

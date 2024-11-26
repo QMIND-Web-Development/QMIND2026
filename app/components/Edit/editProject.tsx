@@ -20,6 +20,7 @@ function EditProject({ project }: any) {
   } = useGlobalContext();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  
   const handleEditState = (e: any) => {
     if (!isEditing) {
       setIsEditing(true);
@@ -34,21 +35,23 @@ function EditProject({ project }: any) {
   };
 
   return (
-    <div className="fixed right-[20px] bottom-[20px]">
+    <div className="fixed right-[90px] top-[110px] z-[999]">
       <Button
         variant={"ghost"}
         disabled={isLoading}
         className={cn(
-          `w-auto h-auto p-[15px] bg-[#1e1e1e] rounded-[50%] shadow-lg border-[2px] border-[#4E4E4E] z-[2]`,
-          { "border-[#f0b542]": isEditing }
+          'w-[50px] h-[50px] p-[15px] bg-[#1e1e1e] rounded-[50%] shadow-lg border-[2px] border-[#4E4E4E] z-[2]',
+          { "border-[#f0b542]": !isEditing },
+          { "border-[#0000FF]": isEditing }
+
         )}
         onClick={(e) => {
           handleEditState(e);
         }}
       >
-        {isLoading && (
+        {isLoading ? (
           <svg
-            className="animate-spin  h-5 w-5 text-white"
+            className="animate-spin h-5 w-5 text-white"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -59,7 +62,7 @@ function EditProject({ project }: any) {
               cy="12"
               r="10"
               stroke="currentColor"
-              stroke-width="4"
+              strokeWidth="4"
             ></circle>
             <path
               className="opacity-75"
@@ -67,15 +70,10 @@ function EditProject({ project }: any) {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-        )}
-        {!isLoading && (
-          <Image
-            src={PENCIL}
-            height={25}
-            width={25}
-            alt="pencil"
-            className="opacity-[80%] "
-          />
+        ) : (
+          <span className="text-white font-semibold text-base">
+            {isEditing ? "SAVE" : "EDIT"}
+          </span>
         )}
       </Button>
     </div>
