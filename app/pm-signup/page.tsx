@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { useGlobalContext } from "@/Context/store";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -27,9 +28,17 @@ export default function LoginPage({ searchParams }: any) {
   const [isOpen, setIsOpen] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [pin, setPin] = useState("");
-
+  const { user } =useGlobalContext();
   const supabase = createClient();
   const router = useRouter();
+
+
+  useEffect(() => {
+    
+    if (user) {
+      router.push('/'); 
+    }
+  }, [user, router]);
 
   const handleAuthorization = async () => {
     const check = await checkPin(pin);

@@ -12,39 +12,42 @@ import { useRouter } from "next/navigation";
 
 export default function ResetPasswordForm() {
   const [error, setError] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("")
+  const [errorMsg, setErrorMsg] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sessionEstablished, setSessionEstablished] = useState(false); // New state
+  const [successMsg, setSuccessMsg] = useState(""); // State for success message
   const searchParams = useSearchParams();
   const supabase = createClient();
   const router = useRouter();
 
   useEffect(() => {
     const exchangeTokenForSession = async () => {
-      const accessToken = searchParams.get("access_token"); // Use this to get the access_token query parameter
+      const accessToken = searchParams.get("access_token");
 
       if (accessToken) {
         const { error } = await supabase.auth.exchangeCodeForSession(accessToken);
 
-        // if (error) {
-        //   console.error("Error during session exchange:", error.message);
-        // } else {
-        //   setSessionEstablished(true); // Session is established
-        // }
+        if (error) {
+          console.error("Error during session exchange:", error.message);
+        }
       }
     };
 
     exchangeTokenForSession();
   }, [searchParams, supabase]);
+
   const confirmPasswords = async () => {
     if (password !== confirmPassword) {
-      return alert("Passwords do not match");
+      setErrorMsg("Passwords do not match");
+      setError(true);
+      return;
     }
 
-
     setLoading(true);
+    setError(false);
+    setSuccessMsg("");
+
     const { error } = await supabase.auth.updateUser({
       password: password,
     });
@@ -53,8 +56,7 @@ export default function ResetPasswordForm() {
       setErrorMsg(error.message);
       setError(true);
     } else {
-      alert("Password updated successfully!");
-      router.push('/');
+      setSuccessMsg("Password updated successfully!");
     }
     setLoading(false);
   };
@@ -100,9 +102,15 @@ export default function ResetPasswordForm() {
                 className="w-[100%] min-h-[58px] text-lg"
               />
             </div>
+
+         
             {error && (
               <p className="text-destructive">{errorMsg}</p>
             )}
+            {successMsg && (
+              <p className="text-success">{successMsg}</p>
+            )}
+
             <Button
               disabled={loading}
               onClick={confirmPasswords}
