@@ -52,32 +52,39 @@ export default function LoginPage({ searchParams }: any) {
 
   const handleSignup = async () => {
     setLoading(true);
-
+  
     if (password !== passwordCheck) {
-      alert("passwords incorrect");
+      alert("Passwords do not match");
       setLoading(false);
       return;
     }
-
-    const { data, error } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-      options: {
-        emailRedirectTo: `https://qmind.ca/verified`
+  
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/verified`,
+        },
+      });
+  
+      if (error) {
+        console.error("Error signing up:", error.message);
+        setError(true);
+        setLoading(false);
+        return;
       }
-    });
-
-    if (error) {
+  
+      console.log("Sign-up data:", data);
+      setLoading(false);
+      setIsOpen(true);
+    } catch (err) {
+      console.error("Unexpected error:", err);
       setError(true);
       setLoading(false);
-      console.log(error)
-      return;
     }
-
-    setLoading(false);
-    setIsOpen(true);
-    
   };
+  
 
   return (
     <Container className="flex justify-center items-center pb-[70px]">
