@@ -6,6 +6,8 @@ import { useGlobalContext } from "@/Context/store";
 import { Input } from "../ui/input";
 import { useEffect, useState } from "react";
 
+import './SocialLinks.css'
+
 function SocialLinks({ project }: any) {
   const { isEditing, githubUrl, setGithubUrl } = useGlobalContext();
 

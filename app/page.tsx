@@ -11,7 +11,7 @@ import CompanySlider from "./components/CompanySlider";
 import { useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import react, { useEffect } from "react";
-import MemberCard from "./components/MemberCard";
+import TestimonialCard from "./components/TestimonialCards/TestimonialCard";
 import Link from "next/link";
 import Image from "next/image";
 import HeadlineCard from "./components/HeadlineCard";
@@ -385,7 +385,7 @@ export default function Home() {
           {/* Hero Content */}
           <div className=" lg:w-[62%] 2xl:w-[55%] flex flex-col gap-[25px] lg:gap-[50px] relative">
             <div className="flex flex-col gap-[32px]">
-              <h1 className="font-gothic h1-styles">
+              <h1>
                 Empowering <br /> future leaders to <br />
                 <span className="text-[#F0B542]">unlock the power of AI</span>
               </h1>
@@ -497,7 +497,7 @@ export default function Home() {
           subtitle="Click On Them To See What They Think"
         />
         <div className="flex flex-col lg:flex-row justify-start md:justify-center items-center mt-[-65px] md:mt-0">
-          <MemberCard
+          <TestimonialCard
             spotlight={true}
             className="rotate-6"
             company={TESTIMONIALS[spotlight].companyLogo}
@@ -506,7 +506,7 @@ export default function Home() {
             name={TESTIMONIALS[spotlight].name}
             headshot={TESTIMONIALS[spotlight].headshot}
             activeCard={true}
-          ></MemberCard>
+          ></TestimonialCard>
 
           <div className="member-spotlight flex flex-col justify-center bg-[#2E2E2E] md:min-h-[320px] lg:min-h-[auto] w-[100%] lg:w-[685px] rounded-[16px] md:rounded-tr-[16px] md:rounded-br-[16px] py-[20px] md:py-[30px] px-[20px] md:px-0 md:pr-[32px] md:pl-[60px] mt-[-70px] md:mt-0 md:ml-[-30px]">
             <div className="flex flex-row flex-start items-center text-[#F7F7F7] ">
@@ -549,7 +549,7 @@ export default function Home() {
         </div>
         <div className="flex flex-row justify-start md:justify-center mx-[20px] md:mx-0 overflow-x-scroll md:overflow-visible w-[100dvw] md:w-[100%] md:flex-wrap lg:max-w-[1000px] items-center gap-[5px] md:gap-[15px] px-8 appearance-none	md:px-0 pb-[10px]">
           {TESTIMONIALS.map((card, key) => (
-            <MemberCard
+            <TestimonialCard
               className={`${card.angle}`}
               key={key}
               onClick={() => {

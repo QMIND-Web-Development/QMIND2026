@@ -1,0 +1,28 @@
+.users-img-title {
+  color: #6E6E6E;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 100%; /* 16px */
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  @media only screen and (max-width: 390px) {
+    font-size: 12px;
+  }
+}
+
+.users-img {
+  display: flex;
+  padding: 12px;
+  align-items: center;
+  overflow: scroll;
+  gap: 16px;
+  align-self: stretch;
+  border-radius: 16px;
+  border: 1px solid #4E4E4E;
+  background: #161616;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { 
+      display: none;
+  }
+}

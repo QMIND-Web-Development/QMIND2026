@@ -1,5 +1,4 @@
 import "./globals.css";
-import "./globals.scss";
 import { Sofia_Sans } from "next/font/google";
 import { kontrapunkt, tradeGothic } from "./font";
 import Navbar from "./components/Navbar";
@@ -8,7 +7,6 @@ import Footer from "./components/Footer";
 import { useState } from "react";
 import type { Metadata } from "next";
 import { GlobalContextProvider } from "@/Context/store";
-import { ThemeProvider } from "./providers/theme-provider";
 import { Suspense } from "react";
 
 const sofia_sans = Sofia_Sans({ subsets: ["latin"], variable: "--font-sofia" });
@@ -49,12 +47,6 @@ export default function RootLayout({
         >
           <div className="flex flex-col w-[100dvw] h-[100dvh] overflow-y-scroll overflow-x-hidden">
             <GlobalContextProvider>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="dark"
-                enableSystem
-                disableTransitionOnChange
-              >
                 <Navbar />
                 <div className="flex flex-col min-h-[100vh] h-[100%] justify-between">
                   <div className="pt-[72px] md:pt-[100px]">
@@ -64,7 +56,6 @@ export default function RootLayout({
                   </div>
                   <Footer />
                 </div>
-              </ThemeProvider>
             </GlobalContextProvider>
           </div>
         </body>

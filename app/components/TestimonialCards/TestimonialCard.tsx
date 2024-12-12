@@ -4,6 +4,9 @@ import React, { useEffect, useRef } from "react";
 import Image from "next/image";
 import barcode from "@/assets/barcode.png";
 import { cn } from "@/lib/utils";
+
+import './TestimonialCard.css';
+
 function CompanyLogo({ companyLogo, companyName, className }: any) {
   return (
     <>
@@ -45,7 +48,7 @@ function CompanyLogo({ companyLogo, companyName, className }: any) {
   );
 }
 
-function MemberCard({
+function TestimonialCard({
   company,
   headshot,
   onClick,
@@ -151,4 +154,4 @@ function MemberCard({
   );
 }
 
-export default MemberCard;
+export default TestimonialCard;

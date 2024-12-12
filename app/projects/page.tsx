@@ -1,7 +1,6 @@
 import React from "react";
 import Container from "../components/Container";
 import Image from "next/image";
-import "@/styles/page.scss";
 import { tradeGothic } from "../font";
 import { Label } from "@/components/ui/label";
 import ProjectFilters from "@/components/ui/projectFilters";
@@ -17,6 +16,8 @@ export default async function Projects({ searchParams }: any) {
     .ilike("projectTitle", `%${searchParams?.search || ""}%`);
   const isSearching = searchParams?.search;
 
+
+  console.log(data);
 
   const previewMap = {} as any;
 

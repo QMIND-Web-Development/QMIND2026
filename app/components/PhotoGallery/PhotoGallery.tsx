@@ -1,9 +1,9 @@
 "use client";
 import Image from "next/image";
 import React, { useRef, useState } from "react";
-import { Card } from "./ui/card";
+import { Card } from "../ui/card";
 import PLUS from "@/assets/icons/add-image.png";
-import { Input } from "./ui/input";
+import { Input } from "../ui/input";
 import {
   Dialog,
   DialogClose,
@@ -11,13 +11,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./ui/dialog";
-import { Label } from "./ui/label";
-import { Button } from "./ui/button";
+} from "../ui/dialog";
+import { Label } from "../ui/label";
+import { Button } from "../ui/button";
 import CLOSE from "@/assets/icons/Close.png";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useGlobalContext } from "@/Context/store";
+
+import './PhotoGallery.css'
 
 function PhotoGallary({ project, images }: any) {
   const [uploadImages, setUploadImages] = useState<any>([]);

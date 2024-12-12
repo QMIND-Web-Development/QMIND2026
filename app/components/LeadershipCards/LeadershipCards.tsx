@@ -1,8 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+
 import { sofia_sans } from "@/font";
-function Members() {
+
+import './LeadershipCards.css'
+
+function LeadershipCards() {
   const leadership = [
     {
       title: "Managing Directors",
@@ -163,6 +167,14 @@ function Members() {
           social: "https://www.linkedin.com/in/connorpineault/",
         },
 
+        {
+          name: "Nick Del Aguila",
+          title: "Web Developer",
+          img: "/headshots/Nicolas_Aguila.png",
+          class: "leadershipCardOperations",
+          social: "https://www.linkedin.com/in/nickdelaguila/",
+        },
+
       ],
     },
   ];
@@ -220,4 +232,4 @@ function Members() {
   );
 }
 
-export default Members;
+export default LeadershipCards;
