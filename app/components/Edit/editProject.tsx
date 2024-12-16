@@ -35,7 +35,7 @@ function EditProject({ project }: any) {
   };
 
   return (
-    <div className="absolute right-[32px] top-[20px] z-[999]">
+    <div className="absolute right-[32px] top-[20px] z-[1]">
       <Button
         variant={"outline"}
         disabled={isLoading}

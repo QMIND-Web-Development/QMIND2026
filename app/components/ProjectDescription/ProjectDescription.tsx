@@ -38,7 +38,7 @@ function InfoTextArea({ project }: any) {
           <div className="w-full">
             <Textarea
               className={cn(
-                "text-gray-400 text-[16px] font-[600] mb-[8px] bg-[#161616] border-[#4E4E4E] w-full max-h-[600px] lg:max-h-[500px]"
+                "text-white text-[16px] font-[600] mb-[8px] bg-[#161616] border-[#4E4E4E] w-full max-h-[600px] lg:max-h-[500px]"
               )}
               placeholder="Type description here..."
               value={shortDescription}
@@ -64,7 +64,7 @@ function InfoTextArea({ project }: any) {
           <div className="w-full">
             <Textarea
               className={cn(
-                "text-gray-400 text-[16px] font-[600] mb-[8px] bg-[#161616] border-[#4E4E4E] w-full max-h-[600px] lg:max-h-[500px]"
+                "text-white text-[16px] font-[600] mb-[8px] bg-[#161616] border-[#4E4E4E] w-full max-h-[600px] lg:max-h-[500px]"
               )}
               placeholder="Type description here..."
               value={impactDescription}
@@ -88,7 +88,7 @@ function InfoTextArea({ project }: any) {
           <div className="w-full">
             <Textarea
               className={cn(
-                "text-gray-400 text-[16px] font-[600] mb-[8px] bg-[#161616] border-[#4E4E4E] w-full max-h-[600px] lg:max-h-[500px]"
+                "text-white text-[16px] font-[600] mb-[8px] bg-[#161616] border-[#4E4E4E] w-full max-h-[600px] lg:max-h-[500px]"
               )}
               placeholder="Type description here..."
               value={fullDescription}
