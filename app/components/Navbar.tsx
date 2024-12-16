@@ -69,7 +69,7 @@ function Navbar() {
         navOn ? `${"h-[100dvh] "} ${styles.navMobileOpenBg}` : `h-[90px]`
       } 
       ${styles.navbarBg}
-      fixed z-10 top-0 right-0 left-0 lg:h-[90px] flex items-center`}
+      fixed z-[999] top-0 right-0 left-0 lg:h-[90px] flex items-center`}
     >
       <Container className="flex !flex-row justify-start lg:justify-between items-start lg:items-center font-gothic w-[100%] ">
         {/* QMIND Logo */}
