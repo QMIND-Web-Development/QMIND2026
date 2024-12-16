@@ -87,7 +87,7 @@ export default function LoginForm() {
             )}
             <Link
               // href={"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
-              href="/forgotpwd"
+              href="/forgotpassword"
               rel="noreferrer"
               className="text-[#387BFF] underline pt-[10px] lg:pt-[0] text-[20px] cursor-pointer hover:opacity-60"
             >

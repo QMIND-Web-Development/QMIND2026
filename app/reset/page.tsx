@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function ResetPasswordForm() {
   const [loadError, setLoadError] = useState<boolean | null>();
@@ -18,6 +19,7 @@ export default function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState(""); // State for success message
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -26,13 +28,6 @@ export default function ResetPasswordForm() {
   useEffect(() => {
     const exchangeTokenForSession = async () => {
       const accessToken = searchParams.get("access_token");
-      const error = searchParams.get("error");
-
-      if (error) {
-        const errorDesc = searchParams.get("error_description");
-        setLoadErrorMsg(errorDesc);
-        setLoadError(true);
-      }
 
       if (accessToken) {
         const { error } = await supabase.auth.exchangeCodeForSession(accessToken);
@@ -40,6 +35,14 @@ export default function ResetPasswordForm() {
         if (error) {
           console.error("Error during session exchange:", error.message);
         }
+      }
+
+      const error = searchParams.get("error");
+
+      if (error) {
+        const errorDesc = searchParams.get("error_description");
+        setLoadErrorMsg(errorDesc);
+        setLoadError(true);
       }
     };
 
@@ -66,6 +69,7 @@ export default function ResetPasswordForm() {
       setSubmitError(true);
     } else {
       setSuccessMsg("Password updated successfully!");
+      setSuccess(true);
     }
     setLoading(false);
   };
@@ -116,10 +120,7 @@ export default function ResetPasswordForm() {
 
         
             {submitError && (
-              <p className="text-destructive">{submitErrorMsg}</p>
-            )}
-            {successMsg && (
-              <p className="text-success">{successMsg}</p>
+              <p className="text-fail">{submitErrorMsg}</p>
             )}
 
             <Button
@@ -130,6 +131,20 @@ export default function ResetPasswordForm() {
             >
               Confirm
             </Button>
+
+            <Dialog open={success}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Edit profile</DialogTitle>
+                    <DialogDescription>
+                      {successMsg}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button onClick={() => router.push('/login')}>Continue</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
           </div>
         </CardContent>
         </>
