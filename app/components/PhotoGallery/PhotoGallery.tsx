@@ -225,7 +225,7 @@ function PhotoGallary({ project, images }: any) {
 
               {/* Error Message */}
               {errorMessages.map((errorMessage: any, key: any) => (
-                <Label key={key} className="text-destructive">
+                <Label key={key} className="text-fail">
                   {errorMessage}
                 </Label>
               ))}
