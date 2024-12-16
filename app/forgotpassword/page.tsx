@@ -64,7 +64,7 @@ export default function LoginForm() {
             </div>
             
             {error && (
-              <p className="text-destructive">Invalid username</p>
+              <p className="text-fail">Invalid username</p>
             )}
             {success &&(
               <p className="text-success">Password reset link sent to your email!</p>

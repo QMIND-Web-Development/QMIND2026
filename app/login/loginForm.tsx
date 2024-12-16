@@ -83,7 +83,7 @@ export default function LoginForm() {
               />
             </div>
             {error && (
-              <p className="text-destructive">{errorMsg}</p>
+              <p className="text-fail">{errorMsg}</p>
             )}
             <Link
               // href={"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
