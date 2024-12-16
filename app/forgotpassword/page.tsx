@@ -21,7 +21,7 @@ export default function LoginForm() {
  
   const sendResetPassword= async()=>{
     try {
-      const {data: resetData, error}=await supabase
+      const {data: resetData, error} = await supabase
       .auth
       .resetPasswordForEmail(email,{
          redirectTo: `${window.location.origin}/reset`
@@ -29,7 +29,7 @@ export default function LoginForm() {
       
       setSuccess(true)
     } catch (error) {
-      
+      console.log('error ', error);
     }
   }
   return (
@@ -64,7 +64,7 @@ export default function LoginForm() {
             </div>
             
             {error && (
-              <p className="text-destructive">Invalid username</p>
+              <p className="text-fail">Invalid username</p>
             )}
             {success &&(
               <p className="text-success">Password reset link sent to your email!</p>
@@ -72,7 +72,8 @@ export default function LoginForm() {
             <Button
               disabled={loading}
               onClick={sendResetPassword}
-              className="mt-[15px] w-[100%] text-lg py-[25px]">
+              variant="outline"
+              className="mt-[15px] w-fit text-lg py-[20px] px-[20px]">
               Send Email
             </Button>
           </div>
