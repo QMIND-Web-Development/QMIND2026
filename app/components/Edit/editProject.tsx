@@ -35,14 +35,14 @@ function EditProject({ project }: any) {
   };
 
   return (
-    <div className="fixed right-[90px] top-[110px] z-[999]">
+    <div className="absolute right-[32px] top-[20px] z-[999]">
       <Button
-        variant={"ghost"}
+        variant={"outline"}
         disabled={isLoading}
         className={cn(
-          'w-[50px] h-[50px] p-[15px] bg-[#1e1e1e] rounded-[50%] shadow-lg border-[2px] border-[#4E4E4E] z-[2]',
-          { "border-[#f0b542]": !isEditing },
-          { "border-[#0000FF]": isEditing }
+          'w-[50px] py-[5px] px-[30px] bg-[#1e1e1e] rounded-[6px] shadow-lg border-[2px] border-[#4E4E4E] z-[2]',
+          { "border-[#4E4E4E]": !isEditing },
+          { "border-white": isEditing }
 
         )}
         onClick={(e) => {
@@ -71,7 +71,7 @@ function EditProject({ project }: any) {
             ></path>
           </svg>
         ) : (
-          <span className="text-white font-semibold text-base">
+          <span className="text-white/80 font-semibold text-base">
             {isEditing ? "SAVE" : "EDIT"}
           </span>
         )}
