@@ -96,9 +96,10 @@ export default function LoginForm() {
             <Button
               disabled={loading}
               onClick={() => handleSignup()}
-              className="mt-[15px] w-[100%] text-lg py-[25px]"
+              variant="outline"
+              className="mt-[15px] w-fit text-lg py-[20px] px-[20px]"
             >
-              login
+              LOGIN
             </Button>
           </div>
         </CardContent>

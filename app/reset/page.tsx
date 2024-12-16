@@ -11,8 +11,10 @@ import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 
 export default function ResetPasswordForm() {
-  const [error, setError] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [loadError, setLoadError] = useState<boolean | null>();
+  const [loadErrorMsg, setLoadErrorMsg] = useState<String | null>();
+  const [submitError, setSubmitError] = useState(false);
+  const [submitErrorMsg, setSubmitErrorMsg] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,6 +26,13 @@ export default function ResetPasswordForm() {
   useEffect(() => {
     const exchangeTokenForSession = async () => {
       const accessToken = searchParams.get("access_token");
+      const error = searchParams.get("error");
+
+      if (error) {
+        const errorDesc = searchParams.get("error_description");
+        setLoadErrorMsg(errorDesc);
+        setLoadError(true);
+      }
 
       if (accessToken) {
         const { error } = await supabase.auth.exchangeCodeForSession(accessToken);
@@ -39,13 +48,13 @@ export default function ResetPasswordForm() {
 
   const confirmPasswords = async () => {
     if (password !== confirmPassword) {
-      setErrorMsg("Passwords do not match");
-      setError(true);
+      setSubmitErrorMsg("Passwords do not match");
+      setSubmitError(true);
       return;
     }
 
     setLoading(true);
-    setError(false);
+    setSubmitError(false);
     setSuccessMsg("");
 
     const { error } = await supabase.auth.updateUser({
@@ -53,8 +62,8 @@ export default function ResetPasswordForm() {
     });
 
     if (error) {
-      setErrorMsg(error.message);
-      setError(true);
+      setSubmitErrorMsg(error.message);
+      setSubmitError(true);
     } else {
       setSuccessMsg("Password updated successfully!");
     }
@@ -64,6 +73,8 @@ export default function ResetPasswordForm() {
   return (
     <Container className="flex justify-center items-center pb-[70px]">
       <Card className="border-transparent md:border-white border-none p-0 m-0">
+        { !loadError ?
+        <>
         <CardHeader>
           <div className="flex gap-[20px] items-center">
             <Image
@@ -103,9 +114,9 @@ export default function ResetPasswordForm() {
               />
             </div>
 
-         
-            {error && (
-              <p className="text-destructive">{errorMsg}</p>
+        
+            {submitError && (
+              <p className="text-destructive">{submitErrorMsg}</p>
             )}
             {successMsg && (
               <p className="text-success">{successMsg}</p>
@@ -114,12 +125,30 @@ export default function ResetPasswordForm() {
             <Button
               disabled={loading}
               onClick={confirmPasswords}
+              variant="outline"
               className="mt-[15px] w-[100%] text-lg py-[25px]"
             >
               Confirm
             </Button>
           </div>
         </CardContent>
+        </>
+        : 
+        <>
+        <CardHeader>
+          <div className="flex gap-[20px] items-center">
+            <Image
+              src={"/icons/qmind_logo.png"}
+              height={34}
+              width={20}
+              alt="logo"
+            />
+            <CardTitle className="text-4xl">{loadErrorMsg}</CardTitle>
+          </div>
+        </CardHeader>
+        </>
+        }
+        
       </Card>
     </Container>
   );
