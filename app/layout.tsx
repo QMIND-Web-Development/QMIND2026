@@ -24,14 +24,14 @@ export default function RootLayout({
 }) {
   return (
     <>
-      <html lang="en">
+      <html lang="en" className="bg-[#161616]">
         <head>
           <link
             rel="shortcut icon"
             href="%PUBLIC_URL%/cropped-New-QMIND-Logo-32x32.png"
           />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <meta name="theme-color" content="#000000" />
+          <meta name="theme-color" content="#262626" />
           <meta property="og:type" content="website"></meta>
           <meta property="og:url" content="https://www.qmind.ca" />
           <meta
@@ -41,15 +41,15 @@ export default function RootLayout({
         </head>
 
         <body
-          className={` ${sofia_sans.className} ${"w-[100dvw] h-[100dvh]"} ${
+          className={` ${sofia_sans.className} ${"w-[100dvw] h-fit"} ${
             styles.mainBgColour
           }`}
         >
-          <div className="flex flex-col w-[100dvw] h-[100dvh] overflow-y-scroll overflow-x-hidden">
+          <div className="flex flex-col w-[100dvw] h-fit">
             <GlobalContextProvider>
                 <Navbar />
                 <div className="flex flex-col min-h-[100vh] h-[100%] justify-between">
-                  <div className="pt-[72px] md:pt-[100px]">
+                  <div className="pt-[100px] md:pt-[100px]">
                     <Suspense fallback={<p> Loading... </p>}>
                       {children}
                     </Suspense>

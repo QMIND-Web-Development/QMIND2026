@@ -54,11 +54,11 @@
 }
 
 .navbarBg {
-  background: linear-gradient(350deg, #262626 0%, #161616 65.63%);
+  background: #161616;
 }
 
 .navMobileOpenBg {
   @media only screen and (max-width: 1023px) {
-    background: linear-gradient(224deg, #262626 0%, #161616 65.63%);
+    background: #161616;
   }
 }

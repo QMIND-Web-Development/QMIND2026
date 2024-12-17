@@ -8,6 +8,7 @@ import PLACEHOLDER from "@/assets/Leadership_image.jpg";
 import ProjectCard from "@/components/ui/projectCard";
 import { createClient, downloadImage } from "@/utils/supabase/server";
 import AddProject from "@/components/AddProject/addProject";
+
 export default async function Projects({ searchParams }: any) {
   const supabase = createClient();
   const { data } = await supabase
@@ -15,9 +16,6 @@ export default async function Projects({ searchParams }: any) {
     .select("*")
     .ilike("projectTitle", `%${searchParams?.search || ""}%`);
   const isSearching = searchParams?.search;
-
-
-  console.log(data);
 
   const previewMap = {} as any;
 
@@ -70,13 +68,20 @@ export default async function Projects({ searchParams }: any) {
       </div>
 
       <div className="flex flex-col gap-[50px] mb-[50px]">
-        <ProjectFilters />
+        <div className="flex flex-row w-full gap-4">
+          <div className="flex-grow">
+            <ProjectFilters />
+          </div>
+          <div className="mt-5">
+            {user && !isSearching && <AddProject />}
+          </div>
+        </div>
         <div className="flex flex-col gap-[20px]">
           {data &&
             data.filter(
               (project) =>
                 project.published ||
-                userRes?.data?.user?.email == project.pmEmail
+                (userRes?.data?.user?.email == project.pmEmail && project.published)
             ).length <= 0 && (
               <div className="w-full flex justify-center mb-[100px]">
                 <Label className="text-3xl">Projects Coming Soon...</Label>
@@ -88,7 +93,7 @@ export default async function Projects({ searchParams }: any) {
               .filter(
                 (project) =>
                   project.published ||
-                  (userRes && userRes?.data?.user?.email == project.pmEmail)
+                  (userRes?.data?.user?.email == project.pmEmail && project.published)
               )
               .map((project, key) => (
                 <ProjectCard
@@ -97,8 +102,6 @@ export default async function Projects({ searchParams }: any) {
                   previewMap={previewMap}
                 />
               ))}
-
-          {user && !hasProject && !isSearching && <AddProject />}
         </div>
       </div>
     </Container>

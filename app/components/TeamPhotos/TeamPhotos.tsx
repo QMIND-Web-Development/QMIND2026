@@ -28,10 +28,15 @@ function TeamPhotos({ project, members }: any) {
     isEditing,
   } = useGlobalContext();
 
+  useEffect(() => {
+    setProjectMembers(members);
+  }, [])
+
   const [memberName, setMemberName] = useState("");
   const [memberPosition, setMemberPosition] = useState("");
   const [memberSocial, setMemberSocial] = useState("");
   const [memberImage, setMemberImage] = useState<any>([]);
+  const [memberImageUrl, setMemberImageUrl] = useState<any>([]);
   const [isOpenAddMember, setIsOpenAddMember] = useState(false);
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
@@ -59,6 +64,12 @@ function TeamPhotos({ project, members }: any) {
 
     if (curImages.length > 0) setMemberImage(curImages);
 
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      setMemberImageUrl(e.target?.result);
+    }
+    reader.readAsDataURL(curImages[0] as File);
+
     setMemberErrorMessages(curErrorMessages);
   };
 
@@ -77,29 +88,19 @@ function TeamPhotos({ project, members }: any) {
       return;
     }
 
-    const { data, error } = await supabase.from("teams").upsert({
-      memberName,
-      memberPosition,
-      memberImage: memberImage[0].name || "",
-      memberSocial: memberSocial,
-      projectId: project?.id,
+    setProjectMembers((members: Array<any>) => {
+      members.push(
+        {
+          "memberName": memberName,
+          "memberPosition": memberPosition,
+          "memberImage": memberImage[0],
+          "memberImageUrl": memberImageUrl,
+          "memberSocial": memberSocial,
+          "projectId": project?.id,
+        }
+      );
+      return members;
     });
-
-    if (error) {
-      alert("Error uploading image");
-      setLoading(false);
-      return;
-    }
-
-    const fileUploadRes = await supabase.storage
-      .from("teams")
-      .upload(memberImage[0]?.name, memberImage[0]);
-
-    if (fileUploadRes.error) {
-      alert("Error saving image to storage");
-      setLoading(false);
-      return;
-    }
 
     setMemberName("");
     setMemberPosition("");
@@ -107,43 +108,40 @@ function TeamPhotos({ project, members }: any) {
     setMemberImage([]);
     setIsOpenAddMember(false);
     setLoading(false);
-    router.refresh();
   };
 
-  const handleDeleteImage = async (memberId: string, memberImage: string) => {
+  const handleDeleteImage = async (member: any) => {
     setLoading(true);
 
-    const fileDeleteFromList = await supabase
-      .from("teams")
-      .delete()
-      .eq("memberId", memberId);
+    if (member.memberId) {
+      const fileDeleteFromList = await supabase
+        .from("teams")
+        .delete()
+        .eq("memberId", member.memberId);
 
-    if (fileDeleteFromList.error) {
-      alert("Error removing team member");
+      if (fileDeleteFromList.error) {
+        alert(`Error removing member from team: ${fileDeleteFromList.error}`);
+        setLoading(false);
+      }
+
+      const fileDeleteRes = await supabase.storage
+        .from("teams")
+        .remove([member.memberImage]);
+
+      if (fileDeleteRes.error) {
+        alert(`Error deleting image File: ${fileDeleteRes.error}`);
+      }
+
       setLoading(false);
-      return;
     }
-
-    const fileDeleteRes = await supabase.storage
-      .from("teams")
-      .remove([memberImage]);
-
-    if (fileDeleteRes.error) {
-      alert("Error deleting image File");
-    }
-
-    setTimeout(() => {
-      setLoading(false);
-      router.refresh();
-    }, 300);
+    setProjectMembers((members: Array<any>) => {
+      const index = members.indexOf(member);
+      members.splice(index, 1);
+      return members;
+    })
   };
 
   const uploadRef = useRef(null);
-
-  useEffect(() => {
-    setProjectMembers(members);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [project, members]);
 
   return (
     <div>
@@ -242,7 +240,7 @@ function TeamPhotos({ project, members }: any) {
                       cy="12"
                       r="10"
                       stroke="#202020"
-                      stroke-width="4"
+                      strokeWidth="4"
                     ></circle>
                     <path
                       className="opacity-75"
@@ -259,7 +257,8 @@ function TeamPhotos({ project, members }: any) {
         )}
 
         {projectMembers &&
-          projectMembers.map((member: any, index: any) => (
+          projectMembers.map((member: any, index: any) => {
+            return (
             <>
               <div className=" flex flex-col justify-center items-center min-h-[150px] min-w-[100px] relative">
                 <div className="relative h-full w-full">
@@ -271,7 +270,7 @@ function TeamPhotos({ project, members }: any) {
                     onClick={(e) => isEditing && e.preventDefault()}
                   >
                     <Image
-                      src={member.memberImageUrl || ""}
+                      src={member.memberImageUrl}
                       fill
                       alt="image"
                       className="object-cover rounded-[10px] shadow-lg"
@@ -286,17 +285,17 @@ function TeamPhotos({ project, members }: any) {
                 {isEditing && (
                   <Button
                     variant={"destructive"}
-                    className="absolute top-[-10px] right-[-10px] h-auto w-auto  p-2"
+                    className="absolute top-[-8px] right-[-8px] h-auto w-auto p-1"
                     onClick={() => {
-                      handleDeleteImage(member.memberId, member.memberImage);
+                      handleDeleteImage(member);
                     }}
                   >
-                    <Image src={CLOSE} height={10} width={10} alt="delete" />
+                    <Image src={CLOSE} height={8} width={8} alt="delete" />
                   </Button>
                 )}
               </div>
             </>
-          ))}
+          )})}
       </div>
     </div>
   );

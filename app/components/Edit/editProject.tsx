@@ -9,7 +9,8 @@ import { DialogTitle } from "@radix-ui/react-dialog";
 import { useDebounce, useDebouncedCallback } from "use-debounce";
 import LOADING from "@/assets/icons/loading.png";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { set } from "react-hook-form";
 function EditProject({ project }: any) {
   const {
     handleSaveProject,
@@ -17,38 +18,51 @@ function EditProject({ project }: any) {
     setShowSaveChanges,
     isEditing,
     setIsEditing,
+    setProjectMembers,
+    setProjectImages
   } = useGlobalContext();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const handleEditState = (e: any) => {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("edit") === "true") {
+      setIsEditing(true);
+    }
+  }, [searchParams, setIsEditing]);
+
+  const handleEditState = async (e: any) => {
     if (!isEditing) {
       setIsEditing(true);
       return;
     }
     setIsLoading(true);
-    setTimeout(async () => {
-      await handleSaveProject(project);
-      router.refresh();
-      setIsLoading(false);
-    }, 1000);
+    await handleSaveProject(project);
+    router.push('/projects');
+    router.refresh();
+    setProjectMembers([]);
+    setProjectImages([]);
+    setIsLoading(false);
   };
 
   return (
-    <div className="fixed right-[20px] bottom-[20px]">
+    <div className="absolute right-[32px] top-[20px] z-[1]">
       <Button
-        variant={"ghost"}
+        variant={"outline"}
         disabled={isLoading}
         className={cn(
-          `w-auto h-auto p-[15px] bg-[#1e1e1e] rounded-[50%] shadow-lg border-[2px] border-[#4E4E4E] z-[2]`,
-          { "border-[#f0b542]": isEditing }
+          'w-[50px] py-[5px] px-[30px] bg-[#1e1e1e] rounded-[6px] shadow-lg border-[2px] border-[#4E4E4E] z-[2]',
+          { "border-[#4E4E4E]": !isEditing },
+          { "border-white": isEditing }
+
         )}
         onClick={(e) => {
           handleEditState(e);
         }}
       >
-        {isLoading && (
+        {isLoading ? (
           <svg
-            className="animate-spin  h-5 w-5 text-white"
+            className="animate-spin h-5 w-5 text-white"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -59,7 +73,7 @@ function EditProject({ project }: any) {
               cy="12"
               r="10"
               stroke="currentColor"
-              stroke-width="4"
+              strokeWidth="4"
             ></circle>
             <path
               className="opacity-75"
@@ -67,15 +81,10 @@ function EditProject({ project }: any) {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-        )}
-        {!isLoading && (
-          <Image
-            src={PENCIL}
-            height={25}
-            width={25}
-            alt="pencil"
-            className="opacity-[80%] "
-          />
+        ) : (
+          <span className="text-white/80 font-semibold text-base">
+            {isEditing ? "SAVE" : "EDIT"}
+          </span>
         )}
       </Button>
     </div>
