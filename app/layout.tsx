@@ -49,7 +49,7 @@ export default function RootLayout({
             <GlobalContextProvider>
                 <Navbar />
                 <div className="flex flex-col min-h-[100vh] h-[100%] justify-between">
-                  <div className="pt-[100px] md:pt-[100px]">
+                  <div className="pt-[80px] md:pt-[80px]">
                     <Suspense fallback={<p> Loading... </p>}>
                       {children}
                     </Suspense>
