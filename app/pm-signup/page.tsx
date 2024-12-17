@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { useGlobalContext } from "@/Context/store";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -20,6 +21,7 @@ import { checkPin } from "./actions";
 
 export default function LoginPage({ searchParams }: any) {
   const [error, setError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<String | null>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordCheck, setPasswordCheck] = useState("");
@@ -27,9 +29,16 @@ export default function LoginPage({ searchParams }: any) {
   const [isOpen, setIsOpen] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [pin, setPin] = useState("");
-
+  const { user } =useGlobalContext();
   const supabase = createClient();
   const router = useRouter();
+
+
+  useEffect(() => {
+    if (user) {
+      router.push('/'); 
+    }
+  }, [user, router]);
 
   const handleAuthorization = async () => {
     const check = await checkPin(pin);
@@ -43,32 +52,45 @@ export default function LoginPage({ searchParams }: any) {
 
   const handleSignup = async () => {
     setLoading(true);
-
+  
     if (password !== passwordCheck) {
-      alert("passwords incorrect");
-      setLoading(false);
-      return;
-    }
-
-    const { data, error } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-      options: {
-        emailRedirectTo: `https://qmind.ca/verified`
-      }
-    });
-
-    if (error) {
       setError(true);
+      setErrorMsg("Passwords do not match");
       setLoading(false);
-      console.log(error)
+      return;
+    } else if (password.length < 8) {
+      setError(true);
+      setErrorMsg("Make sure password is at least 8 characters long");
+      setLoading(false);
       return;
     }
-
-    setLoading(false);
-    setIsOpen(true);
-    
+  
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/verified`,
+        },
+      });
+  
+      if (error) {
+        setError(true);
+        setErrorMsg(error.message);
+        setLoading(false);
+        return;
+      }
+  
+      setLoading(false);
+      setIsOpen(true);
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      setError(true);
+      setErrorMsg("something went wrong, please try again later");
+      setLoading(false);
+    }
   };
+  
 
   return (
     <Container className="flex justify-center items-center pb-[70px]">
@@ -163,16 +185,17 @@ export default function LoginPage({ searchParams }: any) {
                 />
               </div>
               {error && (
-                <p className="text-destructive">
+                <p className="text-fail">
                   Error Registering Account.
                   <br />
-                  Make sure password is at least 6 characters long
+                  {errorMsg}
                 </p>
               )}
               <Button
                 disabled={loading}
                 onClick={() => handleSignup()}
-                className="mt-[15px] w-[100%] text-lg py-[25px]"
+                variant="outline"
+                className="mt-[15px] w-fit px-[20px] text-lg py-[25px]"
               >
                 Sign Up
               </Button>
@@ -200,14 +223,15 @@ export default function LoginPage({ searchParams }: any) {
               
               
               {error && (
-                <p className="text-destructive">
+                <p className="text-fail">
                   wrong pin! are you sure you are a PM?
                 </p>
               )}
               <Button
                 disabled={loading}
+                variant="outline"
                 onClick={() => handleAuthorization()}
-                className="mt-[15px] w-[100%] text-lg py-[25px]"
+                className="mt-[15px] w-fit px-[20px] text-lg py-[25px]"
               >
                 Gain Access
               </Button>

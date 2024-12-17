@@ -9,7 +9,7 @@ function BtnLink({ text, href, className, isExternalLink }: CTAProps) {
       rel={isExternalLink ? "noreferrer" : ""}
       target={isExternalLink ? "_blank" : ""}
       className={cn(
-        ` min-w-[140px] bg-[#F7F7F7] rounded-[5px] tertiary-colour h-[35px] px-[13px] md:px-[20px] lg:px-[35px] flex justify-center items-center`,
+        ` min-w-[140px] bg-[#F7F7F7] rounded-[5px] tertiary-colour h-[40px] px-[13px] md:px-[16px] lg:px-[35px] flex justify-center items-center`,
         styles.ctaHover,
         className
       )}

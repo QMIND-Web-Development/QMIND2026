@@ -8,6 +8,7 @@ import PLACEHOLDER from "@/assets/Leadership_image.jpg";
 import ProjectCard from "@/components/ui/projectCard";
 import { createClient, downloadImage } from "@/utils/supabase/server";
 import AddProject from "@/components/AddProject/addProject";
+
 export default async function Projects({ searchParams }: any) {
   const supabase = createClient();
   const { data } = await supabase
@@ -15,8 +16,6 @@ export default async function Projects({ searchParams }: any) {
     .select("*")
     .ilike("projectTitle", `%${searchParams?.search || ""}%`);
   const isSearching = searchParams?.search;
-
-  console.log(data);
 
   const previewMap = {} as any;
 

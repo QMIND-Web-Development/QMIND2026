@@ -83,11 +83,11 @@ export default function LoginForm() {
               />
             </div>
             {error && (
-              <p className="text-destructive">{errorMsg}</p>
+              <p className="text-fail">{errorMsg}</p>
             )}
             <Link
               // href={"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
-              href="/forgotpwd"
+              href="/forgotpassword"
               rel="noreferrer"
               className="text-[#387BFF] underline pt-[10px] lg:pt-[0] text-[20px] cursor-pointer hover:opacity-60"
             >
@@ -96,9 +96,10 @@ export default function LoginForm() {
             <Button
               disabled={loading}
               onClick={() => handleSignup()}
-              className="mt-[15px] w-[100%] text-lg py-[25px]"
+              variant="outline"
+              className="mt-[15px] w-fit text-lg py-[20px] px-[20px]"
             >
-              login
+              LOGIN
             </Button>
           </div>
         </CardContent>

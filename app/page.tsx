@@ -383,7 +383,7 @@ export default function Home() {
       <Container className="text-center md:text-left">
         <div className="flex 2xl:pt-[20.22px] justify-between gap-[24px]">
           {/* Hero Content */}
-          <div className=" lg:w-[62%] 2xl:w-[55%] flex flex-col gap-[25px] lg:gap-[50px] relative">
+          <div className="w-full lg:w-[62%] 2xl:w-[55%] flex flex-col gap-[25px] lg:gap-[50px] relative">
             <div className="flex flex-col gap-[32px]">
               <h1>
                 Empowering <br /> future leaders to <br />
@@ -405,7 +405,7 @@ export default function Home() {
             </div>
 
             {/* Landing Page Buttons */}
-            <div className="flex flex-col md:flex-row justify-center md:justify-start items-center gap-[24px]">
+            <div className="flex flex-col lg:flex-row justify-center md:justify-start items-center gap-[24px] lg:mt-[25px] lg:w-full xl:mt-0">
               <BtnLink
                 isExternalLink={true}
                 className={`min-w-[200px] !text-[13px] justify-center ${tradeGothic.className}`}

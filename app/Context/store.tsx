@@ -7,6 +7,7 @@ import {
   Dispatch,
   SetStateAction,
   useState,
+  useEffect,
 } from "react";
 
 interface ContextProps {
@@ -66,6 +67,7 @@ export const GlobalContextProvider = ({ children }: any) => {
   const [memberErrorMessages, setMemberErrorMessages] = useState([]);
   const [category, setCategory] = useState("");
   const [projectMembers, setProjectMembers] = useState([]);
+  const [projectImages, setProjectImages] = useState([]);
   const [published, setPublished] = useState(false);
   const [navLoading, setNavLoading] = useState(true);
   const supabase = createClient();
@@ -91,6 +93,63 @@ export const GlobalContextProvider = ({ children }: any) => {
         setPublished,
       })
       .select();
+
+    for (const member of projectMembers as any) {
+      if (!member.memberId) {
+        const userUpload = await supabase.from("teams").upsert({
+          "memberName": member.memberName,
+          "memberPosition": member.memberPosition,
+          "memberImage": member.memberImage.name,
+          "memberSocial": member.memberSocial,
+          "projectId": member.projectId,
+        });
+  
+        if (userUpload.error) {
+          alert(`Member Add failed: ${userUpload.error.message}`);
+          setLoading(false);
+        }
+  
+        const fileUpload = await supabase.storage
+        .from("teams")
+        .upload(member.memberImage.name, member.memberImage);
+
+        if (fileUpload.error) {
+          alert(`Error saving image to storage ${fileUpload.error.message}`);
+          setLoading(false);
+        }
+      }
+    }
+
+    for (let image of projectImages as any) {
+      if (!image.publicUrl.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`)) {
+        const fileUpload = await supabase.storage
+          .from("projects")
+          .upload(`project_images/${image.file.name}`, image.file);
+
+        if (fileUpload.error) {
+          // @ts-ignore
+          if (fileUpload?.error?.statusCode !== "409")
+            alert("Error Uploading " + image.name);
+        }
+      }
+    }
+
+    let filteredImages = projectImages.map((image: any) => {
+      if (image.publicUrl.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`)) {
+        return image.publicUrl.split('/projects/')[1];
+      } else {
+        return `project_images/${image.file.name}`;
+      }
+    });
+
+    const projectUpload = await supabase
+      .from("projects")
+      .update({ projectImages: filteredImages })
+      .eq("id", project.id);
+
+    if (projectUpload.error) {
+      alert(`Error Uploading Image File, ${projectUpload.error.message}`);
+    }
 
     setIsEditing(false);
   };
@@ -135,6 +194,8 @@ export const GlobalContextProvider = ({ children }: any) => {
         setMemberErrorMessages,
         projectMembers,
         setProjectMembers,
+        projectImages,
+        setProjectImages,
         published,
         setPublished,
         navLoading,
