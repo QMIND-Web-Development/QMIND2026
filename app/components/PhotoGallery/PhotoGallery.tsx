@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Card } from "../ui/card";
 import PLUS from "@/assets/icons/add-image.png";
 import { Input } from "../ui/input";
@@ -22,14 +22,21 @@ import { useGlobalContext } from "@/Context/store";
 import './PhotoGallery.css'
 
 function PhotoGallary({ project, images }: any) {
+  const {
+    projectImages,
+    setProjectImages,
+  } = useGlobalContext();
   const [uploadImages, setUploadImages] = useState<any>([]);
+  const [uploadImagesUrl, setUploadImagesUrl] = useState<any>([]);
   const [errorMessages, setErrorMessages] = useState<any>([]);
   const [loading, setLoading] = useState(false);
-  const [showProjectImage, setShowProjectImage] = useState(-1);
   const [showUploadImage, setShowUploadImage] = useState(false);
   const supabase = createClient();
   const router = useRouter();
 
+  useEffect(() => {
+    setProjectImages(images);
+  }, [])
 
   const {isEditing} = useGlobalContext();
   const handleAddPhotos = (e: any) => {
@@ -46,13 +53,13 @@ function PhotoGallary({ project, images }: any) {
 
     // Remaining number of images allowed to be uploaded
     const remainingUploads =
-      6 - project.projectImages.length - uploadImages.length - curImages.length;
+      6 - projectImages.length - curImages.length;
 
     // Check if adding more files exceeds the limit of 6
     if (remainingUploads < 0) {
       curImages = curImages.filter(
         (_, i: any) =>
-          i <= 5 - project.projectImages.length - uploadImages.length
+          i < 6 - projectImages.length - curImages.length
       );
       curErrorMessages.push(
         `You can only upload 6 images TOTAL to your project.`
@@ -60,7 +67,14 @@ function PhotoGallary({ project, images }: any) {
     }
 
     setErrorMessages(curErrorMessages);
-    setUploadImages((prevImages: any) => [...prevImages, ...curImages]);
+
+    for (const image of curImages as any) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        setUploadImages((prevImages:any) => [...prevImages, {"file":image, "publicUrl": e.target?.result}]);
+      }
+      reader.readAsDataURL(image);
+    }
   };
 
   const removeUploadedImage = (imageIdx: any) => {
@@ -75,91 +89,59 @@ function PhotoGallary({ project, images }: any) {
 
     // Checks for spaces in file name
     for (let image of uploadImages) {
-      if (image.name.includes(" ")) {
+      if (image.file.name.includes(" ")) {
         alert("Can't have spaces in file name.");
         setLoading(false);
         return;
       }
+      setProjectImages((images: any) => {
+        images.push(image);
+        return images;
+      })
     }
 
-    for (let image of uploadImages) {
-      const fileUploadRes = await supabase.storage
-        .from("projects")
-        .upload(`project_images/${image.name}`, image);
-
-      if (fileUploadRes.error) {
-        // @ts-ignore
-        if (fileUploadRes?.error?.statusCode === "409")
-          alert("Uploaded duplicate image");
-        else alert("Error Uploading " + image.name);
-
-        setLoading(false);
-        continue;
-      }
-    }
-
-    let filteredImages = Array.from(
-      new Set([
-        ...project.projectImages,
-        ...uploadImages.map((file: any) => "project_images/" + file.name),
-      ])
-    );
-
-    const fileNames = filteredImages;
-
-    const projectUploadRes = await supabase
-      .from("projects")
-      .update({ projectImages: fileNames })
-      .eq("id", project.id);
-
-    if (projectUploadRes.error) {
-      alert("Error Uploading Image File");
-    }
-
-    setUploadImages([]);
     setShowUploadImage(false);
-    router.refresh();
+    setUploadImages([]);
     setLoading(false);
   };
 
-  const handleDeleteImage = async (delIdx: string) => {
+  const handleDeleteImage = async (index: string) => {
     setLoading(true);
-    const deletingImageName = project.projectImages[delIdx];
 
-    const fileNames = project.projectImages.filter(
-      (imageName: string) => imageName !== deletingImageName
-    );
+    if (projectImages[index].publicUrl.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`)) {
+      const fileName = projectImages[index].publicUrl.split('projects/')[1];
 
+      const newImages = projectImages.map((image: any) => {
+        if (image != projectImages[index]) {
+          return image.publicUrl.split('projects/')[1];
+        }
+        return false;
+      });
 
-    // Removing from the pathname from sql table
-    const fileDeleteFromList = await supabase
-      .from("projects")
-      .update({
-        projectImages: fileNames,
-      })
-      .eq("id", project.id);
+      // Removing from the pathname from sql table
+      const fileDeleteFromList = await supabase
+        .from("projects")
+        .update({
+          projectImages: newImages,
+        })
+        .eq("id", project.id);
 
-    if (fileDeleteFromList.error) {
-      alert("Error removing image name");
-      setLoading(false);
-      return;
+      if (fileDeleteFromList.error) {
+        alert(`Error removing image name: ${fileDeleteFromList.error.message}`);
+      }
+
+      // Remove from bucket
+      const fileDelete = await supabase.storage
+        .from("projects")
+        .remove([fileName]);
+
+      if (fileDelete.error) {
+        alert(`Error deleting image file: ${fileDelete.error.message}`);
+      }
     }
 
-
-    // Remove from bucket
-    const fileDeleteRes = await supabase.storage
-      .from("projects")
-      .remove([deletingImageName]);
-
-    if (fileDeleteRes.error) {
-      alert("Error deleting image File");
-    }
-
-    setTimeout(() => {
-      setLoading(false);
-      router.refresh();
-      setShowProjectImage(-1);
-    }, 300);
+    projectImages.splice(index, 1);
+    setLoading(false);
   };
 
   const uploadRef = useRef(null);
@@ -209,7 +191,7 @@ function PhotoGallary({ project, images }: any) {
                     className="flex gap-[10px] items-center justify-between "
                     key={key}
                   >
-                    <Label>{image?.name}</Label>
+                    <Label>{image.file.name}</Label>
                     <Button
                       variant={"outline"}
                       className="p-[10px] flex h-auto"
@@ -247,7 +229,7 @@ function PhotoGallary({ project, images }: any) {
                       cy="12"
                       r="10"
                       stroke="#202020"
-                      stroke-width="4"
+                      strokeWidth="4"
                     ></circle>
                     <path
                       className="opacity-75"
@@ -264,50 +246,29 @@ function PhotoGallary({ project, images }: any) {
         )}
 
         {/* Project Images */}
-        {images.map((image: any, index: any) => (
-          <Dialog
-            open={index == showProjectImage}
-            onOpenChange={(status) => {
-              setShowProjectImage(status ? index : -1);
-            }}
-            key={index}
-          >
-            <DialogTrigger>
-              <div className="min-w-[338px] h-[256px] xxs:w-[150px] relative">
-                <Image
-                  className=" rounded-[12px] border-[1.5px] border-[#4E4E4E] object-cover"
-                  src={image.publicUrl}
-                  alt="Project Image"
-                  fill
-                  unoptimized
-                />
-              </div>
-            </DialogTrigger>
-            {/* Content of the modal */}
-            <DialogContent className="rounded-[10px] max-w-[80vw] lg:max-w-[50vw] max-h-[80vh] overflow-auto">
-              <DialogHeader>
-                <DialogTitle>
-                  Image {index + 1} / {images.length}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="relative max-h-[90vh] max-w-[90vw] w-[100%] min-h-[50vh]">
-                <Image
-                  className=" rounded-[12px] shadow-lg object-contain"
-                  src={image.publicUrl}
-                  alt="Project Image"
-                  fill
-                  unoptimized
-                />
-              </div>
-              <Button
-                variant={"destructive"}
-                onClick={() => handleDeleteImage(index)}
-                disabled={loading}
-              >
-                Delete
-              </Button>
-            </DialogContent>
-          </Dialog>
+        {projectImages.map((image: any, index: any) => (
+          <>
+            <div className="min-w-[338px] h-[256px] xxs:w-[150px] relative">
+              <Image
+                className=" rounded-[12px] border-[1.5px] border-[#4E4E4E] object-cover"
+                src={image.publicUrl}
+                alt="Project Image"
+                fill
+                unoptimized
+              />
+              {isEditing ? 
+                <Button
+                  variant={"destructive"}
+                  className="absolute top-[-4px] right-[-4px] h-auto w-auto p-1"
+                  onClick={() => handleDeleteImage(index)}
+                >
+                  <Image src={CLOSE} height={8} width={8} alt="delete" />
+                </Button>
+                :
+                <></>
+              }              
+            </div>
+          </>
         ))}
       </div>
     </div>

@@ -81,7 +81,6 @@ export default function LoginPage({ searchParams }: any) {
         return;
       }
   
-      console.log("Sign-up data:", data);
       setLoading(false);
       setIsOpen(true);
     } catch (error) {

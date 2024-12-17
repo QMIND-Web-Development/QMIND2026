@@ -5,6 +5,8 @@ import { useGlobalContext } from "@/Context/store";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { Button } from "../ui/button";
 
 function ProjectHeader({ project }: any) {
   const {
@@ -61,13 +63,20 @@ function ProjectHeader({ project }: any) {
           <p className="min-w-fit self-start relative top-[5px]">{category}</p>
         ) : (
           <div className="w-auto">
-            <Input
-              className={`${kontrapunkt.className}  text-[#3F69FF]`}
-              placeholder="Project Title"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              maxLength={25}
-            />
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <Button variant="outline">{category || "Node Type"}</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-black">
+                <DropdownMenuRadioGroup value={category} onValueChange={setCategory}>
+                  <DropdownMenuRadioItem value="Innovation">Innovation</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="Consulting">Consulting</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="DAIR">DAIR</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="Disruptive Tech">Disruptive Tech</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="AI Ethics">AI Ethics</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
       </div>

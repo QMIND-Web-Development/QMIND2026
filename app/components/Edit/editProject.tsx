@@ -9,7 +9,8 @@ import { DialogTitle } from "@radix-ui/react-dialog";
 import { useDebounce, useDebouncedCallback } from "use-debounce";
 import LOADING from "@/assets/icons/loading.png";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { set } from "react-hook-form";
 function EditProject({ project }: any) {
   const {
     handleSaveProject,
@@ -17,21 +18,31 @@ function EditProject({ project }: any) {
     setShowSaveChanges,
     isEditing,
     setIsEditing,
+    setProjectMembers,
+    setProjectImages
   } = useGlobalContext();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  
-  const handleEditState = (e: any) => {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("edit") === "true") {
+      setIsEditing(true);
+    }
+  }, [searchParams, setIsEditing]);
+
+  const handleEditState = async (e: any) => {
     if (!isEditing) {
       setIsEditing(true);
       return;
     }
     setIsLoading(true);
-    setTimeout(async () => {
-      await handleSaveProject(project);
-      router.refresh();
-      setIsLoading(false);
-    }, 1000);
+    await handleSaveProject(project);
+    router.push('/projects');
+    router.refresh();
+    setProjectMembers([]);
+    setProjectImages([]);
+    setIsLoading(false);
   };
 
   return (

@@ -37,7 +37,7 @@ function ProjectFilters() {
           </Label>
           <Input
             placeholder="Search by Name"
-            className="grow shrink basis-0 px-4 py-2 bg-stone-900 rounded-lg border border-neutral-600 justify-start items-center gap-2 flex h-[180px]"
+            className="w-full grow shrink basis-0 px-4 py-2 bg-stone-900 rounded-lg border border-neutral-600 justify-start items-center gap-2 flex h-[180px]"
             onChange={(e) => handleSearch(e.target.value)}
           />
         </div>

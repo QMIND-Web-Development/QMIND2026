@@ -12,7 +12,7 @@ import TeamPhotos from "@/components/TeamPhotos/TeamPhotos";
 
 import './page.css'
 
-async function page({ params }: any) {
+async function Project({ params }: any) {
   const supabase = createClient();
   const projectQuery = await supabase
     .from("projects")
@@ -52,7 +52,9 @@ async function page({ params }: any) {
   if (userRes && userRes?.data?.user?.email) {
     canEdit = userRes.data.user.email === project.pmEmail;
   }
+
   return (
+    <>
     <Container>
       <div className="users-container">
         {/*Project title*/}
@@ -93,7 +95,8 @@ async function page({ params }: any) {
         </Suspense>
       </div>
     </Container>
+    </>
   );
 }
 
-export default page;
+export default Project;
