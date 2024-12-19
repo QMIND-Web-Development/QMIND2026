@@ -73,16 +73,22 @@ export default function LoginPage({ searchParams }: any) {
           emailRedirectTo: `${window.location.origin}/verified`,
         },
       });
-  
+
       if (error) {
         setError(true);
         setErrorMsg(error.message);
         setLoading(false);
         return;
       }
-  
-      setLoading(false);
-      setIsOpen(true);
+
+      if (data.user!.identities!.length) {
+        setLoading(false);
+        setIsOpen(true);
+      } else {
+        setError(true);
+        setErrorMsg("This email has already been used to create an account.")
+      }
+      
     } catch (error) {
       console.error("Unexpected error:", error);
       setError(true);
