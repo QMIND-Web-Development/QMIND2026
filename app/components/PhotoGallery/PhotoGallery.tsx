@@ -84,8 +84,11 @@ function PhotoGallary({ project, images }: any) {
   };
 
   const handleUploadImage = async () => {
+    console.log("stupid function")
     setErrorMessages([]);
     setLoading(true);
+
+    console.log(uploadImages)
 
     // Checks for spaces in file name
     for (let image of uploadImages) {
@@ -94,9 +97,12 @@ function PhotoGallary({ project, images }: any) {
         setLoading(false);
         return;
       }
+      
       setProjectImages((images: any) => {
-        images.push(image);
-        return images;
+        return [
+          ...images,
+          image
+        ]
       })
     }
 
@@ -215,6 +221,7 @@ function PhotoGallary({ project, images }: any) {
               <Button
                 disabled={uploadImages.length <= 0 || loading}
                 onClick={handleUploadImage}
+                className="yippediedoodlepoodle"
               >
                 {loading ? (
                   <svg

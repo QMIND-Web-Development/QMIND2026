@@ -19,7 +19,7 @@ function EditProject({ project }: any) {
     isEditing,
     setIsEditing,
     setProjectMembers,
-    setProjectImages
+    projectImages,
   } = useGlobalContext();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -37,11 +37,8 @@ function EditProject({ project }: any) {
       return;
     }
     setIsLoading(true);
-    await handleSaveProject(project);
-    // router.push('/projects');
-    // router.refresh(); why do we got this here?
-    setProjectMembers([]);
-    setProjectImages([]);
+    console.log(projectImages)
+    const success = await handleSaveProject(project);
     setIsLoading(false);
   };
 

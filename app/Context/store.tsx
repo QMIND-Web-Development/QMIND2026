@@ -82,11 +82,7 @@ export const GlobalContextProvider = ({ children }: any) => {
   const supabase = createClient();
 
   const handleSaveProject = async (project:any) => {
-    console.log(projectTitle,"project title")
-    if (!githubUrl.includes("https://github.com/")) {
-      alert("Invalid GitHub Url");
-      return;
-    }
+    
     const newErrors = {
       projectTitle: projectTitle === "",
       category: category === "",
@@ -94,13 +90,12 @@ export const GlobalContextProvider = ({ children }: any) => {
       shortDescription: shortDescription === "",
       impactDescription: impactDescription === "",
       fullDescription: fullDescription === "",
-      
     };
   
     setErrors(newErrors);
   
     if (Object.values(newErrors).some((error) => error)) {
-      return;
+      return false;
     }
 
     const { data, error } = await supabase
@@ -132,6 +127,7 @@ export const GlobalContextProvider = ({ children }: any) => {
         if (userUpload.error) {
           alert(`Member Add failed: ${userUpload.error.message}`);
           setLoading(false);
+          return false;
         }
   
         const fileUpload = await supabase.storage
@@ -141,9 +137,12 @@ export const GlobalContextProvider = ({ children }: any) => {
         if (fileUpload.error) {
           alert(`Error saving image to storage ${fileUpload.error.message}`);
           setLoading(false);
+          return false;
         }
       }
     }
+
+    console.log(projectImages)
 
     for (let image of projectImages as any) {
       if (!image.publicUrl.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`)) {
@@ -153,8 +152,12 @@ export const GlobalContextProvider = ({ children }: any) => {
 
         if (fileUpload.error) {
           // @ts-ignore
-          if (fileUpload?.error?.statusCode !== "409")
+          if (fileUpload?.error?.statusCode !== "409") {
             alert("Error Uploading " + image.name);
+            return false;
+          } else {
+            console.log("duplicated image, using existing version")
+          }
         }
       }
     }
@@ -174,9 +177,11 @@ export const GlobalContextProvider = ({ children }: any) => {
 
     if (projectUpload.error) {
       alert(`Error Uploading Image File, ${projectUpload.error.message}`);
+      return false;
     }
 
     setIsEditing(false);
+    return true;
   };
 
   return (
