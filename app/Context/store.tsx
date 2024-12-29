@@ -70,11 +70,36 @@ export const GlobalContextProvider = ({ children }: any) => {
   const [projectImages, setProjectImages] = useState([]);
   const [published, setPublished] = useState(false);
   const [navLoading, setNavLoading] = useState(true);
+  const [errors, setErrors] = useState({
+    projectTitle: false,
+    category: false,
+    tags: false,
+    shortDescription: false,
+    impactDescription: false,
+    fullDescription: false,
+  });
+
   const supabase = createClient();
 
   const handleSaveProject = async (project:any) => {
+    console.log(projectTitle,"project title")
     if (!githubUrl.includes("https://github.com/")) {
       alert("Invalid GitHub Url");
+      return;
+    }
+    const newErrors = {
+      projectTitle: projectTitle === "",
+      category: category === "",
+      tags: !tags,
+      shortDescription: shortDescription === "",
+      impactDescription: impactDescription === "",
+      fullDescription: fullDescription === "",
+      
+    };
+  
+    setErrors(newErrors);
+  
+    if (Object.values(newErrors).some((error) => error)) {
       return;
     }
 
@@ -200,6 +225,8 @@ export const GlobalContextProvider = ({ children }: any) => {
         setPublished,
         navLoading,
         setNavLoading,
+        errors,
+        setErrors,
       }}
     >
       {children}

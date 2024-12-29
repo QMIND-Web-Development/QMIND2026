@@ -38,8 +38,8 @@ function EditProject({ project }: any) {
     }
     setIsLoading(true);
     await handleSaveProject(project);
-    router.push('/projects');
-    router.refresh();
+    // router.push('/projects');
+    // router.refresh(); why do we got this here?
     setProjectMembers([]);
     setProjectImages([]);
     setIsLoading(false);
