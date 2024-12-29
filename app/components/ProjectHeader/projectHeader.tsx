@@ -7,7 +7,7 @@ import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-
+import { cn } from "@/lib/utils";
 function ProjectHeader({ project }: any) {
   const {
     isEditing,
@@ -17,6 +17,7 @@ function ProjectHeader({ project }: any) {
     setCategory,
     published,
     setPublished,
+    errors,
   } = useGlobalContext();
 
   useEffect(() => {
@@ -50,12 +51,19 @@ function ProjectHeader({ project }: any) {
         ) : (
           <div className="w-full">
             <Input
-              className={`!text-xl md:!text-4xl ${kontrapunkt.className}`}
+              className={cn(
+                "!text-xl md:!text-4xl",
+                errors.projectTitle && "border-red-500"
+              )}
+              style={errors.projectTitle ? { boxShadow: "0 0 5px red" } : {}}
               placeholder="Project Title"
               value={projectTitle}
               onChange={(e) => setProjectTitle(e.target.value)}
               maxLength={56}
             />
+            {errors.projectTitle && (
+              <p className="text-red-500 text-sm">Project title is required</p>
+            )}
           </div>
         )}
 
@@ -65,7 +73,9 @@ function ProjectHeader({ project }: any) {
           <div className="w-auto">
             <DropdownMenu>
               <DropdownMenuTrigger>
-                <Button variant="outline">{category || "Node Type"}</Button>
+                <Button variant="outline" className={errors.category ? "border-red-500" : ""} style={errors.category ? { boxShadow: "0 0 5px red" } : {}}>
+                  {category || "Node Type"}
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-black">
                 <DropdownMenuRadioGroup value={category} onValueChange={setCategory}>
@@ -77,6 +87,9 @@ function ProjectHeader({ project }: any) {
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
+            {errors.category && (
+              <p className="text-red-500 text-sm">Category is required</p>
+            )}
           </div>
         )}
       </div>

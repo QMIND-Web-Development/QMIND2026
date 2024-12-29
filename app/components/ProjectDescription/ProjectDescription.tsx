@@ -14,6 +14,7 @@ function InfoTextArea({ project }: any) {
     setShortDescription,
     setImpactDescription,
     setFullDescription,
+    errors,
   } = useGlobalContext();
 
   useEffect(() => {
@@ -36,15 +37,20 @@ function InfoTextArea({ project }: any) {
           </div>
         ) : (
           <div className="w-full">
-            <Textarea
+          <Textarea
               className={cn(
-                "text-[#E0E0E0] text-[16px] font-[600] mb-[8px] bg-[#161616] border-[#4E4E4E] w-full max-h-[600px] lg:max-h-[500px]"
+                "text-[#E0E0E0] text-[16px] font-[600] mb-[8px] bg-[#161616] border-[#4E4E4E] w-full max-h-[600px] lg:max-h-[500px]",
+                errors.shortDescription && "border-red-500"
               )}
+              style={errors.shortDescription ? { boxShadow: "0 0 5px red" } : {}}
               placeholder="Type description here..."
               value={shortDescription}
               onChange={(e) => setShortDescription(e.target.value)}
               maxLength={8000}
             />
+            {errors.shortDescription && (
+              <p className="text-red-500 text-sm">Short description is required</p>
+            )}
 </div>
 
         )}
@@ -64,13 +70,18 @@ function InfoTextArea({ project }: any) {
           <div className="w-full">
             <Textarea
               className={cn(
-                "text-[#E0E0E0] text-[16px] font-[600] mb-[8px] bg-[#161616] border-[#4E4E4E] w-full max-h-[600px] lg:max-h-[500px]"
+                "text-[#E0E0E0] text-[16px] font-[600] mb-[8px] bg-[#161616] border-[#4E4E4E] w-full max-h-[600px] lg:max-h-[500px]",
+                errors.impactDescription && "border-red-500"
               )}
+              style={errors.impactDescription ? { boxShadow: "0 0 5px red" } : {}}
               placeholder="Type description here..."
               value={impactDescription}
               onChange={(e) => setImpactDescription(e.target.value)}
               maxLength={8000}
             />
+            {errors.impactDescription && (
+              <p className="text-red-500 text-sm">Impact description is required</p>
+            )}
           </div>
         )}
       </div>
@@ -88,14 +99,21 @@ function InfoTextArea({ project }: any) {
           <div className="w-full">
             <Textarea
               className={cn(
-                "text-[#E0E0E0] text-[16px] font-[600] mb-[8px] bg-[#161616] border-[#4E4E4E] w-full max-h-[600px] lg:max-h-[500px]"
+                "text-[#E0E0E0] text-[16px] font-[600] mb-[8px] bg-[#161616] border-[#4E4E4E] w-full max-h-[600px] lg:max-h-[500px]",
+                errors.fullDescription && "border-red-500"
               )}
+              style={errors.fullDescription ? { boxShadow: "0 0 5px red" } : {}}
               placeholder="Type description here..."
               value={fullDescription}
               onChange={(e) => setFullDescription(e.target.value)}
               maxLength={8000}
             />
+
+            {errors.fullDescription && (
+              <p className="text-red-500 text-sm">Full Project Description is required</p>
+            )}
           </div>
+          
         )}
       </div>
     </>
