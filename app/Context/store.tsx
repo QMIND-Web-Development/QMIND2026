@@ -84,12 +84,13 @@ export const GlobalContextProvider = ({ children }: any) => {
   const handleSaveProject = async (project:any) => {
     
     const newErrors = {
-      projectTitle: projectTitle === "",
-      category: category === "",
+      projectTitle: projectTitle.replaceAll(" ", "") === "",
+      category: category.replaceAll(" ", "") === "",
       tags: !tags,
-      shortDescription: shortDescription === "",
-      impactDescription: impactDescription === "",
-      fullDescription: fullDescription === "",
+      shortDescription: shortDescription.replaceAll(" ", "") === "",
+      impactDescription: impactDescription.replaceAll(" ", "") === "",
+      fullDescription: fullDescription.replaceAll(" ", "") === "",
+      githubUrl: githubUrl.replaceAll(" ", "") === "" || !githubUrl.startsWith("https://github.com/"),
     };
   
     setErrors(newErrors);

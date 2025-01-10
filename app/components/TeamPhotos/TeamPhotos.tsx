@@ -18,6 +18,7 @@ import { Label } from "../ui/label";
 import CLOSE from "@/assets/icons/Close.png";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 function TeamPhotos({ project, members }: any) {
   const {
@@ -35,6 +36,7 @@ function TeamPhotos({ project, members }: any) {
   const [memberName, setMemberName] = useState("");
   const [memberPosition, setMemberPosition] = useState("");
   const [memberSocial, setMemberSocial] = useState("");
+  const [memberSocialError, setMemberSocialError] = useState("");
   const [memberImage, setMemberImage] = useState<any>([]);
   const [memberImageUrl, setMemberImageUrl] = useState<any>([]);
   const [isOpenAddMember, setIsOpenAddMember] = useState(false);
@@ -82,11 +84,16 @@ function TeamPhotos({ project, members }: any) {
   const handleSubmitImage = async () => {
     setLoading(true);
 
-    if (!memberSocial.includes("https://www.linkedin.com/")) {
-      alert("Invalid LinkedIn URL");
+    if (!memberSocial.includes("https://www.linkedin.com/") && 
+        !memberSocial.includes("https://www.linkedin.com/") &&
+        !memberSocial.includes("https://linkedin.com/") && 
+        !memberSocial.includes("http://linkedin.com/")) {
+      setMemberSocialError("Invalid LinkedIn URL");
       setLoading(false);
       return;
     }
+
+    setMemberSocialError("");
 
     setProjectMembers((members: Array<any>) => {
       members.push(
@@ -221,7 +228,9 @@ function TeamPhotos({ project, members }: any) {
                 maxLength={50}
                 value={memberSocial}
                 onChange={(e) => setMemberSocial(e.target.value)}
+                className={cn(memberSocialError && "border-red-500")}
               />
+              <p className="text-fail text-sm">{memberSocialError}</p>
 
               <Button
                 onClick={() => handleSubmitImage()}
