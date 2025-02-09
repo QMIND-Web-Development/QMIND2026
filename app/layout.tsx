@@ -41,11 +41,11 @@ export default function RootLayout({
         </head>
 
         <body
-          className={` ${sofia_sans.className} ${"w-[100dvw] h-fit"} ${
+          className={` ${sofia_sans.className} ${" h-fit"} ${
             styles.mainBgColour
           }`}
         >
-          <div className="flex flex-col w-[100dvw] h-fit">
+          <div className="flex flex-col h-fit">
             <GlobalContextProvider>
                 <Navbar />
                 <div className="flex flex-col min-h-[100vh] h-[100%] justify-between">

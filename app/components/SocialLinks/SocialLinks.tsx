@@ -4,12 +4,13 @@ import Link from "next/link";
 import EXTERNAL_LINK from "@/assets/icons/external_link.png";
 import { useGlobalContext } from "@/Context/store";
 import { Input } from "../ui/input";
+import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
 import './SocialLinks.css'
 
 function SocialLinks({ project }: any) {
-  const { isEditing, githubUrl, setGithubUrl } = useGlobalContext();
+  const { isEditing, githubUrl, setGithubUrl, errors } = useGlobalContext();
 
   useEffect(() => {
     setGithubUrl(project.githubUrl);
@@ -37,7 +38,9 @@ function SocialLinks({ project }: any) {
               value={githubUrl}
               onChange={(e) => setGithubUrl(e.target.value)}
               maxLength={100}
+              className={cn(errors.githubUrl && "border-red-500")}
             />
+            { errors.githubUrl && <p className="text-sm text-fail">Invalid Github URL</p> }
           </div>
         )}
         <div className="info text-center md:text-left">CONTACT QMIND</div>

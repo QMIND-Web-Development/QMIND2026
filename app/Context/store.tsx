@@ -84,12 +84,13 @@ export const GlobalContextProvider = ({ children }: any) => {
   const handleSaveProject = async (project:any) => {
     
     const newErrors = {
-      projectTitle: projectTitle === "",
-      category: category === "",
+      projectTitle: projectTitle.replaceAll(" ", "") === "",
+      category: category.replaceAll(" ", "") === "",
       tags: !tags,
-      shortDescription: shortDescription === "",
-      impactDescription: impactDescription === "",
-      fullDescription: fullDescription === "",
+      shortDescription: shortDescription.replaceAll(" ", "") === "",
+      impactDescription: impactDescription.replaceAll(" ", "") === "",
+      fullDescription: fullDescription.replaceAll(" ", "") === "",
+      githubUrl: githubUrl.replaceAll(" ", "") === "" || !githubUrl.startsWith("https://github.com/"),
     };
   
     setErrors(newErrors);
@@ -148,7 +149,7 @@ export const GlobalContextProvider = ({ children }: any) => {
       if (!image.publicUrl.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`)) {
         const fileUpload = await supabase.storage
           .from("projects")
-          .upload(`project_images/${image.file.name}`, image.file);
+          .upload(`project_images/${project.id}/${image.file.name}`, image.file);
 
         if (fileUpload.error) {
           // @ts-ignore
@@ -166,7 +167,7 @@ export const GlobalContextProvider = ({ children }: any) => {
       if (image.publicUrl.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`)) {
         return image.publicUrl.split('/projects/')[1];
       } else {
-        return `project_images/${image.file.name}`;
+        return `project_images/${project.id}/${image.file.name}`;
       }
     });
 

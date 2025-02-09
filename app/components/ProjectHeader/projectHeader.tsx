@@ -77,7 +77,7 @@ function ProjectHeader({ project }: any) {
                   {category || "Node Type"}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-black">
+              <DropdownMenuContent className="bg-background opacity-[100%]">
                 <DropdownMenuRadioGroup value={category} onValueChange={setCategory}>
                   <DropdownMenuRadioItem value="Innovation">Innovation</DropdownMenuRadioItem>
                   <DropdownMenuRadioItem value="Consulting">Consulting</DropdownMenuRadioItem>
