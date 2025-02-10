@@ -37,7 +37,6 @@ function EditProject({ project }: any) {
       return;
     }
     setIsLoading(true);
-    console.log(projectImages)
     const success = await handleSaveProject(project);
     setIsLoading(false);
   };
