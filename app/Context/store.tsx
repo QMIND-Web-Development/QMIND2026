@@ -85,7 +85,7 @@ export const GlobalContextProvider = ({ children }: any) => {
     
     const newErrors = {
       projectTitle: projectTitle.replaceAll(" ", "") === "",
-      category: category.replaceAll(" ", "") === "",
+      category: category === null,
       tags: !tags,
       shortDescription: shortDescription.replaceAll(" ", "") === "",
       impactDescription: impactDescription.replaceAll(" ", "") === "",
@@ -142,8 +142,6 @@ export const GlobalContextProvider = ({ children }: any) => {
         }
       }
     }
-
-    console.log(projectImages)
 
     for (let image of projectImages as any) {
       if (!image.publicUrl.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`)) {

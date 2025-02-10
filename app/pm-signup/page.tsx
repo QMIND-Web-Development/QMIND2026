@@ -2,13 +2,13 @@
 import { Label } from "@/components/ui/label";
 import Container from "@/components/Container";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useState, useContext, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useGlobalContext } from "@/Context/store";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Dialog,
   DialogHeader,
@@ -19,36 +19,49 @@ import {
 } from "../components/ui/dialog";
 import { checkPin } from "./actions";
 
-export default function LoginPage({ searchParams }: any) {
+export default function LoginPage() {
   const [error, setError] = useState(false);
   const [errorMsg, setErrorMsg] = useState<String | null>();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState<String | null>();
   const [password, setPassword] = useState("");
   const [passwordCheck, setPasswordCheck] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [pin, setPin] = useState("");
-  const { user } =useGlobalContext();
+  const { user } = useGlobalContext();
   const supabase = createClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
+  const accessToken = searchParams.get('access_token');
+
+  useEffect(() => {
+    const exchangeTokenForSession = async () => {
+      if (accessToken) {
+        const { data, error } = await supabase.auth.verifyOtp({ token_hash: accessToken, type: 'email' });
+
+        if (error) {
+          console.error("Error during session exchange:", error.message);
+          setErrorMsg(error.message);
+        } else {
+          setAuthorized(true);
+          setEmail(data.user!.email);
+        }
+      } else {
+        setErrorMsg("are you in the right place?")
+      }
+      setLoading(false);
+    }
+    exchangeTokenForSession();
+  }, [])
 
   useEffect(() => {
     if (user) {
-      router.push('/'); 
-    }
-  }, [user, router]);
-
-  const handleAuthorization = async () => {
-    const check = await checkPin(pin);
-    if (!check) {
-      setError(true);
-    } else if (check) {
       setAuthorized(true);
-      setError(false);
+      setEmail(user.email);
     }
-  }
+  }, [user])
 
   const handleSignup = async () => {
     setLoading(true);
@@ -66,12 +79,8 @@ export default function LoginPage({ searchParams }: any) {
     }
   
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
+      const { data, error } = await supabase.auth.updateUser({
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/verified`,
-        },
       });
 
       if (error) {
@@ -88,6 +97,8 @@ export default function LoginPage({ searchParams }: any) {
         setError(true);
         setErrorMsg("This email has already been used to create an account.")
       }
+
+      router.push('/');
       
     } catch (error) {
       console.error("Unexpected error:", error);
@@ -99,11 +110,13 @@ export default function LoginPage({ searchParams }: any) {
   
 
   return (
-    <Container className="flex justify-center items-center pb-[70px]">
+    <>
+    { authorized ?
+        <Container className="flex justify-center items-center pb-[70px]">
       <Card className="border-transparent md:border-white border-none p-0 m-0">
         <CardHeader>
           <div className="flex gap-[20px] items-center">
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          {/* <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogContent
                   hideCloseButton={true}
                   onOpenAutoFocus={(e) => e.preventDefault()}
@@ -128,7 +141,7 @@ export default function LoginPage({ searchParams }: any) {
                     </Button>
                   </div>
                 </DialogContent>
-              </Dialog>
+              </Dialog> */}
             <Image
               src={"/icons/qmind_logo.png"}
               height={34}
@@ -139,10 +152,9 @@ export default function LoginPage({ searchParams }: any) {
             <CardTitle className="text-4xl">Project Manager Sign Up.</CardTitle>
           </div>
         </CardHeader>
-        { authorized ?
           <CardContent>
             <div className="flex flex-col max-w-[500px] w-[80vw] items-center gap-[15px]">
-              <div className="w-full">
+              {/* <div className="w-full">
                 <Label htmlFor="email">Email:</Label>
                 <Input
                   id="email"
@@ -157,7 +169,8 @@ export default function LoginPage({ searchParams }: any) {
                   required
                   className="w-[100%] min-h-[58px] text-lg"
                 />
-              </div>
+              </div> */}
+              <div className="w-full">Set a password for <i>{email}</i></div>
               <div className="w-[100%]">
                 <label htmlFor="password">Password:</label>
                 <Input
@@ -207,45 +220,19 @@ export default function LoginPage({ searchParams }: any) {
               </Button>
             </div>
           </CardContent>
-          :
-          <CardContent>
-            <div className="flex flex-col max-w-[500px] w-[80vw] items-center gap-[15px]">
-            <>YOU ARE NOT AUTHORIZED!</>
-              <div className="w-full">
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="Enter PM Pin"
-                  defaultValue={pin}
-                  onChange={(e) => {
-                    setError(false);
-                    setPin(e.target.value);
-                  }}
-                  required
-                  className="w-[100%] min-h-[58px] text-lg"
-                />
-              </div>
-              
-              
-              {error && (
-                <p className="text-fail">
-                  wrong pin! are you sure you are a PM?
-                </p>
-              )}
-              <Button
-                disabled={loading}
-                variant="outline"
-                onClick={() => handleAuthorization()}
-                className="mt-[15px] w-fit px-[20px] text-lg py-[25px]"
-              >
-                Gain Access
-              </Button>
-            </div>
-        </CardContent>
-        }
       </Card>
-    </Container>
+      </Container>
+      :
+      <>
+      { loading ? <></> : 
+        <div className="flex flex-col h-[400px] justify-center items-center gap-[15px]">
+          <h3>YOU ARE NOT AUTHORIZED!</h3>
+          <h4>{errorMsg}</h4>
+        </div>
+      }
+      </>
+    }
+    </>
   );
 }
 //76463
