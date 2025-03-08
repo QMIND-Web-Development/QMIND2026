@@ -20,7 +20,7 @@ function SocialLinks({ project }: any) {
   return (
     <div>
       <div className="item-social2 !pl-0 min-w-[50%] lg:min-w-fit text-left">
-        <div className="info text-center md:text-left">GITHUB REPOSITORY</div>
+        <div className="info text-center md:text-left">PROJECT LINK</div>
         {!isEditing ? (
           <Link
             href={githubUrl}
@@ -34,13 +34,13 @@ function SocialLinks({ project }: any) {
         ) : (
           <div>
             <Input
-              placeholder="https://github.com/"
+              placeholder="ex. github.com, kaggle.com, etc."
               value={githubUrl}
               onChange={(e) => setGithubUrl(e.target.value)}
               maxLength={100}
               className={cn(errors.githubUrl && "border-red-500")}
             />
-            { errors.githubUrl && <p className="text-sm text-fail">Invalid Github URL</p> }
+            { errors.githubUrl && <p className="text-sm text-fail">Invalid Project URL</p> }
           </div>
         )}
         <div className="info text-center md:text-left">CONTACT QMIND</div>

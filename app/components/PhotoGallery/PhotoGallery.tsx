@@ -31,6 +31,8 @@ function PhotoGallary({ project, images }: any) {
   const [errorMessages, setErrorMessages] = useState<any>([]);
   const [loading, setLoading] = useState(false);
   const [showUploadImage, setShowUploadImage] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [showImagePreview, setShowImagePreview] = useState(false);
   const supabase = createClient();
   const router = useRouter();
 
@@ -84,11 +86,8 @@ function PhotoGallary({ project, images }: any) {
   };
 
   const handleUploadImage = async () => {
-    console.log("stupid function")
     setErrorMessages([]);
     setLoading(true);
-
-    console.log(uploadImages)
 
     // Checks for spaces in file name
     for (let image of uploadImages) {
@@ -117,7 +116,7 @@ function PhotoGallary({ project, images }: any) {
     if (projectImages[index].publicUrl.startsWith(`${process.env.NEXT_PUBLIC_SUPABASE_URL}`)) {
       const fileName = projectImages[index].publicUrl.split('projects/')[1];
 
-      const newImages = projectImages.map((image: any) => {
+      const newImages = projectImages.map((image: any, key: any) => {
         if (image != projectImages[index]) {
           return image.publicUrl.split('projects/')[1];
         }
@@ -147,14 +146,50 @@ function PhotoGallary({ project, images }: any) {
     }
 
     projectImages.splice(index, 1);
+    const projectImagesArray = projectImages.slice();
+    setProjectImages(projectImagesArray);
     setLoading(false);
   };
+
+  const scrollRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) {
+      const onWheel = (e: any) => {
+        if (e.deltaY == 0) return;
+        e.preventDefault();
+        el.scrollTo({
+          left: el.scrollLeft + e.deltaY,
+          behavior: "smooth"
+        });
+      };
+      el.addEventListener("wheel", onWheel);
+      return () => el.removeEventListener("wheel", onWheel);
+    }
+  }, []);
 
   const uploadRef = useRef(null);
   return (
     <div className="w-full">
+
+      {/* Image Preview Dialog */}
+      <Dialog open={showImagePreview} onOpenChange={setShowImagePreview}>
+        <DialogContent onInteractOutside={() => setShowImagePreview(false)} className="max-w-[900px]">
+          <div className="relative mx-auto h-fit w-full max-w-[800px]">
+            <Image
+              src={previewImage != null ? projectImages[previewImage].publicUrl : null}
+              alt="Project Image"
+              height={0}
+              width={0}
+              unoptimized
+              className="h-auto w-full"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="users-img-title">PHOTO & VIDEO GALLERY</div>
-      <div className="users-img min-h-[256px]">
+      <div className="users-img min-h-[256px]" ref={scrollRef}>
         {/* Add Project Image */}
         {isEditing && images.length <= 6 && (
           <Dialog open={showUploadImage} onOpenChange={setShowUploadImage}>
@@ -168,7 +203,7 @@ function PhotoGallary({ project, images }: any) {
               <DialogHeader>
                 <DialogTitle>Upload project Photos</DialogTitle>
               </DialogHeader>
-              <Label htmlFor="image">Select images:</Label>
+              <Label htmlFor="image">Select images (Max 6 total images):</Label>
               <Button
                 variant={"outline"}
                 className="relative"
@@ -254,12 +289,16 @@ function PhotoGallary({ project, images }: any) {
 
         {/* Project Images */}
         {projectImages.map((image: any, index: any) => (
-          <>
+          <div key={index}>
             <div className="min-w-[338px] h-[256px] xxs:w-[150px] relative">
               <Image
-                className=" rounded-[12px] border-[1.5px] border-[#4E4E4E] object-cover"
+                className="rounded-[12px] border-[1.5px] border-[#4E4E4E] object-cover hover:cursor-pointer"
                 src={image.publicUrl}
                 alt="Project Image"
+                onClick={() => {
+                  setShowImagePreview(true)
+                  setPreviewImage(index)
+                }}
                 fill
                 unoptimized
               />
@@ -275,7 +314,7 @@ function PhotoGallary({ project, images }: any) {
                 <></>
               }              
             </div>
-          </>
+          </div>
         ))}
       </div>
     </div>

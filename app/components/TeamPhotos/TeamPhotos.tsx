@@ -31,7 +31,7 @@ function TeamPhotos({ project, members }: any) {
 
   useEffect(() => {
     setProjectMembers(members);
-  }, [])
+  }, [members])
 
   const [memberName, setMemberName] = useState("");
   const [memberPosition, setMemberPosition] = useState("");
@@ -95,19 +95,17 @@ function TeamPhotos({ project, members }: any) {
 
     setMemberSocialError("");
 
-    setProjectMembers((members: Array<any>) => {
-      members.push(
-        {
-          "memberName": memberName,
-          "memberPosition": memberPosition,
-          "memberImage": memberImage[0],
-          "memberImageUrl": memberImageUrl,
-          "memberSocial": memberSocial,
-          "projectId": project?.id,
-        }
-      );
-      return members;
-    });
+    // Create new member object
+    const newMember = {
+      memberName: memberName,
+      memberPosition: memberPosition,
+      memberImage: memberImage[0],
+      memberImageUrl: memberImageUrl,
+      memberSocial: memberSocial,
+      projectId: project?.id,
+    };
+
+    setProjectMembers((prevMembers: any) => [...prevMembers, newMember]);
 
     setMemberName("");
     setMemberPosition("");
@@ -138,14 +136,13 @@ function TeamPhotos({ project, members }: any) {
       if (fileDeleteRes.error) {
         alert(`Error deleting image File: ${fileDeleteRes.error}`);
       }
-
-      setLoading(false);
     }
     setProjectMembers((members: Array<any>) => {
       const index = members.indexOf(member);
       members.splice(index, 1);
       return members;
     })
+    setLoading(false);
   };
 
   const uploadRef = useRef(null);
@@ -225,7 +222,7 @@ function TeamPhotos({ project, members }: any) {
               />
               <Input
                 placeholder="LinkedIn Url"
-                maxLength={50}
+                maxLength={200}
                 value={memberSocial}
                 onChange={(e) => setMemberSocial(e.target.value)}
                 className={cn(memberSocialError && "border-red-500")}
@@ -253,7 +250,7 @@ function TeamPhotos({ project, members }: any) {
                     ></circle>
                     <path
                       className="opacity-75"
-                      fill="#202020"
+                      fill="#FFFFFF"
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
@@ -267,10 +264,11 @@ function TeamPhotos({ project, members }: any) {
 
         {projectMembers &&
           projectMembers.map((member: any, index: any) => {
+            console.log(projectMembers)
             return (
-            <>
-              <div className=" flex flex-col justify-center items-center min-h-[150px] min-w-[100px] relative">
-                <div className="relative h-full w-full">
+            <div key={index}>
+              <div className="flex flex-col justify-start items-center min-h-[150px] min-w-[100px] relative">
+                <div className="relative h-[100px] w-[100px]">
                   <Link
                     href={member.memberSocial || ""}
                     target="_blank"
@@ -303,7 +301,7 @@ function TeamPhotos({ project, members }: any) {
                   </Button>
                 )}
               </div>
-            </>
+            </div>
           )})}
       </div>
     </div>

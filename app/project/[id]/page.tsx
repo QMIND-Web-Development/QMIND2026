@@ -9,6 +9,7 @@ import Tags from "@/components/Tags/tags";
 import SocialLinks from "@/components/SocialLinks/SocialLinks";
 import ProjectHeader from "@/components/ProjectHeader/projectHeader";
 import TeamPhotos from "@/components/TeamPhotos/TeamPhotos";
+import ProjectPDF from "@/components/ProjectPDF/ProjectPDF";
 
 import './page.css'
 
@@ -46,6 +47,7 @@ async function Project({ params }: any) {
       memberImageUrl: memberImageUrl?.publicUrl || "",
     };
   });
+  console.log(projectMembers)
 
   let canEdit = false;
   const userRes = await supabase.auth.getUser();
@@ -65,7 +67,7 @@ async function Project({ params }: any) {
 
         {/*Images of the project*/}
         <PhotoGallery project={project} images={projectImages} />
-
+        
         {/* Content of the project */}
         <div className="mt-[50px] mb-[20px] w-full">
           <h1 className="text-4xl text-center md:text-left">Project Details</h1>
@@ -74,12 +76,13 @@ async function Project({ params }: any) {
           <div className="flex flex-col lg:flex-row justify-between gap-[60px] lg:gap-[70px] w-full">
             {/* Project Markdown */}
             <div className="flex flex-col gap-[24px] w-full">
+              <ProjectPDF></ProjectPDF>
               <ProjectDescription project={project} />
             </div>
 
             {/* Project Socials */}
 
-            <div className="order-1 lg:order-2 max-w-[100%]  mx-auto md:mx-0 lg:min-w-[350px]">
+            <div className="order-1 lg:order-2 max-w-[100%] mx-auto md:mx-0 lg:min-w-[350px]">
               <div className="w-[100%] flex gap-[30px] lg:gap-[0] flex-col md:flex-row lg:flex-col">
                 {/* Images */}
                 <TeamPhotos project={project} members={projectMembers} />

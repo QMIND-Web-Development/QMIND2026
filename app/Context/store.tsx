@@ -90,7 +90,7 @@ export const GlobalContextProvider = ({ children }: any) => {
       shortDescription: shortDescription.replaceAll(" ", "") === "",
       impactDescription: impactDescription.replaceAll(" ", "") === "",
       fullDescription: fullDescription.replaceAll(" ", "") === "",
-      githubUrl: githubUrl.replaceAll(" ", "") === "" || !githubUrl.startsWith("https://github.com/"),
+      // githubUrl: githubUrl.replaceAll(" ", "") === "",
     };
   
     setErrors(newErrors);

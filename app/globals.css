@@ -91,3 +91,25 @@ p {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2; /* Number of lines to display before applying ellipsis */
 }
+
+::-webkit-scrollbar {
+  width: 8px; /* Adjust width for vertical scrollbar */
+  height: 8px; /* Adjust height for horizontal scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* No background */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 100, 100, 0.6); /* Subtle color */
+  border-radius: 10px; /* Rounded corners */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 100, 100, 0.8); /* Slightly darker on hover */
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent; /* Makes the corner blend with the background */
+}
