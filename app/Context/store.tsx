@@ -23,6 +23,8 @@ interface ContextProps {
   setIsEditing: Dispatch<SetStateAction<any>>;
   githubUrl: string;
   setGithubUrl: Dispatch<SetStateAction<any>>;
+  year: string;
+  setYear: Dispatch<SetStateAction<any>>;
 }
 
 const GlobalContext = createContext<any>({
@@ -38,6 +40,8 @@ const GlobalContext = createContext<any>({
   setIsEditing: () => {},
   githubUrl: "",
   setGithubUrl: () => {},
+  year: "",
+  setYear: () => {},
   tags: [],
   setTags: () => {},
   tagName: "",
@@ -70,6 +74,7 @@ export const GlobalContextProvider = ({ children }: any) => {
   const [projectImages, setProjectImages] = useState([]);
   const [published, setPublished] = useState(false);
   const [navLoading, setNavLoading] = useState(true);
+  const [year, setYear] = useState(0);
   const [errors, setErrors] = useState({
     projectTitle: false,
     category: false,
@@ -77,6 +82,7 @@ export const GlobalContextProvider = ({ children }: any) => {
     shortDescription: false,
     impactDescription: false,
     fullDescription: false,
+    year: false,
   });
 
   const supabase = createClient();
@@ -90,7 +96,7 @@ export const GlobalContextProvider = ({ children }: any) => {
       shortDescription: shortDescription.replaceAll(" ", "") === "",
       impactDescription: impactDescription.replaceAll(" ", "") === "",
       fullDescription: fullDescription.replaceAll(" ", "") === "",
-      // githubUrl: githubUrl.replaceAll(" ", "") === "",
+      year: !year || year < 1900 || year > new Date().getFullYear(),
     };
   
     setErrors(newErrors);
@@ -105,6 +111,7 @@ export const GlobalContextProvider = ({ children }: any) => {
         ...project,
         projectTitle,
         category,
+        year,
         tags,
         githubUrl,
         shortDescription,
@@ -231,6 +238,8 @@ export const GlobalContextProvider = ({ children }: any) => {
         setNavLoading,
         errors,
         setErrors,
+        year,
+        setYear,
       }}
     >
       {children}
