@@ -18,7 +18,7 @@ function AddProject() {
       .from("projects")
       .insert({ 
         pmEmail: userRes?.data?.user?.email || "No_Email",
-        published: true
+        published: false
       })
       .select();
 
