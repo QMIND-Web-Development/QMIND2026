@@ -144,35 +144,35 @@ function LeadershipCards() {
       title: "Web Developers",
       cards: [
         {
-          name: "Kayne Lee",
+          name:  "Nihal Kodukula",
           title: "Web Developer",
-          img: "/headshots/Kayne_Lee.png",
+          img: "/headshots/Nihal_Kodukula.png",
           class: "leadershipCardOperations",
-          social: "https://www.linkedin.com/in/kaynelee/",
+          social: "https://www.linkedin.com/in/satyanihal/",
         },
         {
-          name: "Adwait Srivastava",
+          name: "Ananya Kollipara",
           title: "Web Developer",
           img: "/headshots/Adwait_Srivastava.png",
           class: "leadershipCardOperations",
-          social: "https://www.linkedin.com/in/adwait-srivastava/",
+          social: "https://www.linkedin.com/in/ananya-kollipara-b74518295/",
         },
 
 
         {
-          name: "Connor Pineault",
+          name: "Bree Garey",
           title: "Web Developer",
           img: "/headshots/Connor_Pineault.png",
           class: "leadershipCardOperations",
-          social: "https://www.linkedin.com/in/connorpineault/",
+          social: "https://www.linkedin.com/in/ggarey05/",
         },
 
         {
-          name: "Nick Del Aguila",
+          name: "Kuzey Bilgin",
           title: "Web Developer",
           img: "/headshots/Nicolas_Aguila.png",
           class: "leadershipCardOperations",
-          social: "https://www.linkedin.com/in/nickdelaguila/",
+          social: "https://www.linkedin.com/in/kuzey-bilgin-66a7b3213/",
         },
 
       ],
