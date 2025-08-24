@@ -150,21 +150,21 @@ function LeadershipCards() {
           class: "leadershipCardOperations",
           social: "https://www.linkedin.com/in/satyanihal/",
         },
+
+        {
+          name: "Bree Garey",
+          title: "Web Developer",
+          img: "/headshots/Gabrielle_Garey.png",
+          class: "leadershipCardOperations",
+          social: "https://www.linkedin.com/in/ggarey05/",
+        },
+
         {
           name: "Ananya Kollipara",
           title: "Web Developer",
           img: "/headshots/Adwait_Srivastava.png",
           class: "leadershipCardOperations",
           social: "https://www.linkedin.com/in/ananya-kollipara-b74518295/",
-        },
-
-
-        {
-          name: "Bree Garey",
-          title: "Web Developer",
-          img: "/headshots/Connor_Pineault.png",
-          class: "leadershipCardOperations",
-          social: "https://www.linkedin.com/in/ggarey05/",
         },
 
         {
