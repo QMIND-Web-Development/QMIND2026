@@ -162,7 +162,7 @@ function LeadershipCards() {
         {
           name: "Ananya Kollipara",
           title: "Web Developer",
-          img: "/headshots/Adwait_Srivastava.png",
+          img: "/headshots/Ananya_Kollipara.png",
           class: "leadershipCardOperations",
           social: "https://www.linkedin.com/in/ananya-kollipara-b74518295/",
         },
@@ -170,7 +170,7 @@ function LeadershipCards() {
         {
           name: "Kuzey Bilgin",
           title: "Web Developer",
-          img: "/headshots/Nicolas_Aguila.png",
+          img: "/headshots/Kuzey_Bilgin.png",
           class: "leadershipCardOperations",
           social: "https://www.linkedin.com/in/kuzey-bilgin-66a7b3213/",
         },
