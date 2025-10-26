@@ -394,7 +394,7 @@ export default function Home() {
                 artificial intelligence, machine learning, blockchain and
                 quantum computing. We want you to{" "}
                 <a
-                  href="https://discord.gg/jw94EEGyJR"
+                  href=" https://discord.gg/Hj6SMEZHBp"
                   className="underline"
                   target="_blank"
                 >
@@ -583,7 +583,7 @@ export default function Home() {
         <div className="flex flex-col gap-4 text-center relative !overflow-hidden">
           <Title
             title="Our National Conference"
-            subtitle="CUCAI 2023 had 320+ attendees..."
+            subtitle="CUCAI 2025 had 340+ attendees..."
           ></Title>
         </div>
         <div className="h-[240px] md:h-[290px] lg:h-[400px] 2xl:h-[437px] w-[auto]">
@@ -603,7 +603,7 @@ export default function Home() {
           <BtnLink
             isExternalLink={true}
             text="PROCEEDINGS"
-            href="https://qmind.ca/CUCAI_Proceedings_2023.pdf"
+            href="https://cucai.ca/2025_proceedings.pdf"
             className={`${tradeGothic.className} `}
           />
         </div>
@@ -614,7 +614,7 @@ export default function Home() {
         <div className="flex flex-col gap-4 text-center relative !overflow-hidden">
           <Title
             title="Our Product Incubator"
-            subtitle="InQUbate Was partnered with AWS Activate [‘22-’23]"
+            subtitle="InQUbate was partnered with AWS Activate [‘22-’23]"
           ></Title>
         </div>
         <div className="h-[240px] md:h-[290px] lg:h-[400px] 2xl:h-[437px] w-[auto]">

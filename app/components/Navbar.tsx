@@ -155,7 +155,7 @@ function Navbar() {
             </Link>
             <Link
               onClick={() => setNav(false)}
-              href="https://discord.gg/jw94EEGyJR"
+              href=" https://discord.gg/Hj6SMEZHBp"
               target="_blank"
             >
               <Image src={DISCORD} alt="Discord" width={25} height={25} />
