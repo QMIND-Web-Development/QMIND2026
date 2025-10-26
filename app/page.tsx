@@ -421,8 +421,8 @@ export default function Home() {
               <BtnLink
                 isExternalLink={true}
                 className={`min-w-[200px] !text-[13px] justify-center ${tradeGothic.className}`}
-                text="OUR PROJECTS"
-                href="./2021_Lookbook.pdf"
+                text="PAST PROJECTS"
+                href="./2023_Lookbook.pdf"
               />
             </div>
           </div>
@@ -449,14 +449,13 @@ export default function Home() {
         <Title title="What is QMIND?">
           <Head3 className="text-[16px] md:text-[22px] lg:px-[40px] text-[#d0d0d0] !font-normal">
             <Text className="mt-[20px] leading-[30px] lg:leading-[40px]">
-              QMIND is Canada's largest organization on AI. Each year we lead
-              250+ students on 30+ teams of 5 students through AI Research, AI
-              Ethics papers, Disruptive Technology Projects, and Consulting
-              projects, solving real world problems for industry clients. We
-              foster students passionate about changing the world using AI and
-              data science. We host CUCAI, Canada's largest AI conference, with
-              320 delegates and industry leading companies. We incubate startups
-              from ground up. We disrupt & innovate.
+            QMIND is Canada's largest undergraduate organization on AI. Each year we lead 250+ students on 
+            teams of 4-6 students through AI Research, AI Ethics, Computer Vision, Human-computer 
+            Interaction, Healthcare, NLP, Reinforcement Learning, and Consulting Projects, 
+            solving real world problems for industry clients. We foster students passionate about 
+            changing the world using AI and data science. We host CUCAI, Canada's largest AI conference, 
+            with 340+ delegates in 2025 and industry leading companies. 
+            We incubate startups from the ground up. We disrupt & innovate.
             </Text>
           </Head3>
         </Title>
