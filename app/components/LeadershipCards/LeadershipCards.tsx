@@ -174,14 +174,6 @@ function LeadershipCards() {
           social: "https://www.linkedin.com/in/ananya-kollipara-b74518295/",
         },
 
-        {
-          name: "Kuzey Bilgin",
-          title: "Web Developer",
-          img: "/headshots/Kuzey_Bilgin.png",
-          class: "leadershipCardOperations",
-          social: "https://www.linkedin.com/in/kuzey-bilgin-66a7b3213/",
-        },
-
       ],
     },
   ];
@@ -204,16 +196,17 @@ function LeadershipCards() {
                     rel="noreferrer"
                     className={`${card.class} w-[150px] md:w-[225px] lg:w-[275px] text-center flex flex-col gap-5 justify-center items-center rounded-[16px] p-[12px] md:p-[20px] md:rounded-[24px]  bg-[#2E2E2E]`}
                   >
-                    <div
-                      className={`${card.class}-img rounded-[5px] md:rounded-[10px] w-full`}
-                    >
+                    <div className={`${card.class}-img rounded-[5px] md:rounded-[10px] w-full`}>
+                    
+                    <div className="relative w-full aspect-square overflow-hidden rounded-[5px] md:rounded-[8px]">
                       <Image
                         src={card.img}
                         alt="QMIND Member"
-                        className={`md:rounded-[8px] aspect-square w-full rounded-[5px]`}
-                        height={235}
-                        width={235}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 235px"
                       />
+                    </div>
                     </div>
                     <div className="flex flex-col gap-2">
                       <p
