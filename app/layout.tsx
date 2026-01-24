@@ -12,9 +12,9 @@ import { Suspense } from "react";
 const sofia_sans = Sofia_Sans({ subsets: ["latin"], variable: "--font-sofia" });
 
 export const metadata: Metadata = {
-  title: "QMIND - Queens AI Hub",
+  title: "QMIND - Queen's AI Hub",
   description:
-    "QMIND is Canada’s largest student-run organization. We empower undergraduate student’s at Queen’s University to tackle real-world problems through the use of artificial intelligence, machine learning, and various other disruptive technologies.",
+    "QMIND is Canada's largest student-run organization. We empower undergraduate student's at Queen's University to tackle real-world problems through the use of artificial intelligence, machine learning, and various other disruptive technologies.",
 };
 
 export default function RootLayout({

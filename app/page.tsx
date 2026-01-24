@@ -23,6 +23,7 @@ import Text from "./components/Text";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import PartnersAndClients from "./components/PartnersAndClients";
+import Sponsors from "./components/Sponsors/Sponsors";
 import { kontrapunkt, tradeGothic } from "./font";
 
 import MICROSOFT_WHITE from "@/assets/companies/Micosoft_white.png";
@@ -56,6 +57,12 @@ import DELOITTE_WHITE from "@/assets/memberCardImages/Deloitte_white.png";
 import UBER_BLACK from "@/assets/memberCardImages/Uber.png";
 import CANSBRIDGE from "@/assets/memberCardImages/Cansbridge_Fellowship.png";
 import KATAROK from "@/assets/companies/Katarok.png";
+
+// Sponsor logos
+import SMITH_ENGINEERING from "@/assets/companies/Smith_Engineering.png";
+import UOFT_CS from "@/assets/companies/UofT_CS.png";
+import COMPSA from "@/assets/companies/Compsa.png";
+import AMS from "@/assets/companies/AMS.png";
 
 import MEMBER_OLIVIA_XU from "@/assets/memberCardImages/Olivia_Xu.png";
 import MEMBER_KEVIN from "@/assets/memberCardImages/Kevin_Yu.png";
@@ -182,6 +189,59 @@ const COMPANIES_HALF = [
 ];
 
 const COMPANIES = [...COMPANIES_HALF, ...COMPANIES_HALF];
+
+// Sponsor Tiers Data
+const SPONSOR_TIERS = [
+  {
+    tier: "DIAMOND TIER",
+    sponsors: [
+      {
+        image: DELOITTE_WHITE,
+        alt: "Deloitte",
+        logoSize: "max-h-[60px] sm:max-h-[75px] md:max-h-[90px] lg:max-h-[100px]",
+      },
+      {
+        image: SMITH_ENGINEERING,
+        alt: "Smith Engineering Queen's University",
+        logoSize: "max-h-[75px] sm:max-h-[90px] md:max-h-[110px] lg:max-h-[120px]",
+      },
+    ],
+    gradient: "linear-gradient(180deg, #B2E1E6 0%, rgba(200, 225, 238, 0) 100%)",
+    borderColor: "#00D4FF",
+    tierColor: "#B2E1E6", // Cyan/teal color matching the gradient
+  },
+  {
+    tier: "SILVER TIER",
+    sponsors: [
+      {
+        image: UOFT_CS,
+        alt: "University of Toronto - Master of Science in Applied Computing",
+        logoSize: "max-h-[70px] sm:max-h-[85px] md:max-h-[100px] lg:max-h-[110px]",
+      },
+      {
+        image: COMPSA,
+        alt: "COMPSA",
+        width: "pl-8 md:pl-8 lg:pl-16",
+        logoSize: "max-h-[70px] sm:max-h-[85px] md:max-h-[120px] lg:max-h-[125px]",
+      },
+    ],
+    gradient: "linear-gradient(180deg, #E9E9E9 0%, rgba(200, 200, 200, 0) 100%)",
+    borderColor: "#C0C0C0",
+    tierColor: "#E9E9E9", // Silver/gray color matching the gradient
+  },
+  {
+    tier: "BRONZE TIER",
+    sponsors: [
+      {
+        image: AMS,
+        alt: "AMS Queen's University",
+      },
+    ],
+    gradient: "linear-gradient(180deg, #A47341 0%, rgba(197, 145, 108, 0) 100%)",
+    borderColor: "#CD7F32",
+    tierColor: "#A47341", // Bronze/brown color matching the gradient
+  },
+];
 
 const TESTIMONIALS = [
   {
@@ -439,9 +499,6 @@ export default function Home() {
             </video>
           </div>
         </div>
-
-        {/* Yellow banner */}
-        <PartnersAndClients />
       </Container>
 
       {/* What is QMIND? */}
@@ -460,6 +517,9 @@ export default function Home() {
           </Head3>
         </Title>
       </Container>
+
+      {/* Sponsors Section */}
+      <Sponsors tiers={SPONSOR_TIERS} />
 
       {/* Design Team Projects */}
       <Container className="flex flex-col items-center">
