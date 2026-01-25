@@ -198,17 +198,17 @@ const SPONSOR_TIERS = [
       {
         image: DELOITTE_WHITE,
         alt: "Deloitte",
-        logoSize: "max-h-[60px] sm:max-h-[75px] md:max-h-[90px] lg:max-h-[100px]",
+        logoSize: "max-h-[50%] lg:max-h-[55%]", // Deloitte slightly smaller
       },
       {
-        image: SMITH_ENGINEERING,
-        alt: "Smith Engineering Queen's University",
-        logoSize: "max-h-[75px] sm:max-h-[90px] md:max-h-[110px] lg:max-h-[120px]",
-      },
+  image: SMITH_ENGINEERING,
+  alt: "Smith Engineering Queen's University",
+  logoSize: "max-h-[70%] lg:max-h-[80%] xl:max-h-[85%]", // Increased from 60/70/75
+},
     ],
     gradient: "linear-gradient(180deg, #B2E1E6 0%, rgba(200, 225, 238, 0) 100%)",
     borderColor: "#00D4FF",
-    tierColor: "#B2E1E6", // Cyan/teal color matching the gradient
+    tierColor: "#B2E1E6",
   },
   {
     tier: "SILVER TIER",
@@ -216,18 +216,17 @@ const SPONSOR_TIERS = [
       {
         image: UOFT_CS,
         alt: "University of Toronto - Master of Science in Applied Computing",
-        logoSize: "max-h-[70px] sm:max-h-[85px] md:max-h-[100px] lg:max-h-[110px]",
+        logoSize: "max-h-[55%] lg:max-h-[65%]",
       },
       {
-        image: COMPSA,
-        alt: "COMPSA",
-        width: "pl-8 md:pl-8 lg:pl-16",
-        logoSize: "max-h-[70px] sm:max-h-[85px] md:max-h-[120px] lg:max-h-[125px]",
-      },
+  image: COMPSA,
+  alt: "COMPSA", 
+  logoSize: "max-h-[55%] lg:max-h-[65%] pl-4 lg:pl-8",
+},
     ],
     gradient: "linear-gradient(180deg, #E9E9E9 0%, rgba(200, 200, 200, 0) 100%)",
     borderColor: "#C0C0C0",
-    tierColor: "#E9E9E9", // Silver/gray color matching the gradient
+    tierColor: "#E9E9E9",
   },
   {
     tier: "BRONZE TIER",
@@ -235,11 +234,12 @@ const SPONSOR_TIERS = [
       {
         image: AMS,
         alt: "AMS Queen's University",
+        logoSize: "max-h-[60%] lg:max-h-[70%]",
       },
     ],
     gradient: "linear-gradient(180deg, #A47341 0%, rgba(197, 145, 108, 0) 100%)",
     borderColor: "#CD7F32",
-    tierColor: "#A47341", // Bronze/brown color matching the gradient
+    tierColor: "#A47341",
   },
 ];
 

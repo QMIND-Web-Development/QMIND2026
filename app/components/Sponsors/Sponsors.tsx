@@ -8,12 +8,12 @@ interface SponsorTier {
   sponsors: {
     image: StaticImageData;
     alt: string;
-    width?: string; // For custom widths like UofT vs COMPSA
-    logoSize?: string; // For custom logo sizes
+    width?: string;
+    logoSize?: string;
   }[];
   gradient: string;
   borderColor: string;
-  tierColor: string; // Color for tier label text
+  tierColor: string;
 }
 
 interface SponsorsProps {
@@ -31,7 +31,7 @@ const Sponsors: React.FC<SponsorsProps> = ({ tiers }) => {
       <div className="w-full flex flex-col gap-12 md:gap-16">
         {tiers.map((tier, index) => (
           <div key={index} className="flex flex-col gap-0">
-            {/* Tier Label - Right above the left card with no gap */}
+            {/* Tier Label */}
             <div 
               className="text-[10px] md:text-[12px] font-bold tracking-[0.15em] uppercase pl-1 mb-1"
               style={{ color: tier.tierColor }}
@@ -39,13 +39,13 @@ const Sponsors: React.FC<SponsorsProps> = ({ tiers }) => {
               {tier.tier}
             </div>
 
-            {/* Sponsors Grid */}
+            {/* Sponsors Grid - Stay single column until lg (1024px) */}
             <div className={`grid ${
               tier.sponsors.length === 1 
                 ? "grid-cols-1" 
                 : tier.sponsors.length === 2 && tier.tier === "SILVER TIER"
-                ? "grid-cols-1 md:grid-cols-[1.5fr_1fr] gap-4 md:gap-6" 
-                : "grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"
+                ? "grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-4 lg:gap-6" 
+                : "grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6"
             } w-full`}>
               {tier.sponsors.map((sponsor, sponsorIndex) => (
                 <div
@@ -55,12 +55,13 @@ const Sponsors: React.FC<SponsorsProps> = ({ tiers }) => {
                     background: tier.gradient,
                   }}
                 >
-                  <div className="relative h-[100px] sm:h-[120px] md:h-[140px] lg:h-[155px] w-full flex items-center justify-center text-center px-6 sm:px-8 md:px-12 py-4 sm:py-5 md:py-6">
+                  {/* Fixed heights at different breakpoints for better control */}
+                  <div className="relative w-full flex items-center justify-center text-center px-6 sm:px-8 lg:px-12 py-2 h-[100px] sm:h-[120px] lg:h-[140px] xl:h-[155px]">
                     <Image
                       src={sponsor.image}
                       alt={sponsor.alt}
-                      className={`object-contain w-auto max-w-full mx-auto ${
-                        sponsor.logoSize || "max-h-[70px] sm:max-h-[85px] md:max-h-[100px] lg:max-h-[110px]"
+                      className={`object-contain w-auto max-w-[85%] mx-auto ${
+                        sponsor.logoSize || 'max-h-[65%]'
                       }`}
                     />
                   </div>
