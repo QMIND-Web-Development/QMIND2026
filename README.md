@@ -4,8 +4,8 @@
 
 Clone the repository
 ```
-git clone git@github.com:stefpi/QMIND2024.git
-cd QMIND2024
+git clone git@github.com:AdwaitSri/QMIND2025.git
+cd QMIND2025
 npm install
 ```
 
@@ -21,7 +21,7 @@ git commit -m <a good commit message describing what you did. you can follow thi
 git push
 ```
 
-Then make a pull/merge request from your branch to main and assign @stefpi as a reviewer!
+Then make a pull/merge request from your branch to main and assign @AdwaitSri as a reviewer!
 
 ## Technologies
 - Next.js
