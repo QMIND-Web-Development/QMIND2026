@@ -24,7 +24,9 @@ function StatsCards() {
         >
           <p className="text-[35px] md:text-[45px] lg:text-[65px]">230+</p>
           <p className="leading-tight text-[15px] sm:text-[20px] md:text-[22px] text-left lg:text-left">
-            Software Developers
+            AI developers join
+            <br/>
+            QMIND every year
           </p>
         </motion.div>
 
@@ -45,7 +47,9 @@ function StatsCards() {
         >
           <p className="text-[35px] md:text-[45px] lg:text-[65px]">200+</p>
           <p className="leading-tight text-[15px] sm:text-[20px] md:text-[22px] text-center lg:text-right">
-            AI papers & Projects
+            Lifetime AI 
+            <br/>
+            papers & Projects
           </p>
         </motion.div>
       </div>
@@ -66,9 +70,10 @@ function StatsCards() {
           transition={{ duration: 0.5, delay: 0.25 }}
           className={`${styles.blueCard} rounded-[17px] w-[100%] h-[100px] sm:h-[180px] font-family: Kontrapunkt; flex flex-col justify-center items-center px-[10px] lg:px-0 lg:items-start lg:pl-[50px] md:leading-[30px] lg:leading-[50px]  `}
         >
-          <p className="text-[35px] md:text-[45px] lg:text-[65px] ">320+</p>
+          <p className="text-[35px] md:text-[45px] lg:text-[65px] ">340+</p>
           <p className="leading-tight text-[15px] sm:text-[20px] md:text-[22px] text-center lg:text-left">
-            Delegates at CUCAI
+            Delegates at <br/>
+            CUCAI each year
           </p>
         </motion.div>
 
@@ -86,7 +91,7 @@ function StatsCards() {
           transition={{ duration: 0.5, delay: 0.25 }}
           className={`${styles.yellowCard} rounded-[17px] w-[100%] h-[100px] sm:h-[180px] font-family: Kontrapunkt; flex flex-col justify-center items-center px-[10px] lg:px-0 lg:items-start lg:pl-[50px] md:leading-[30px] lg:leading-[50px]`}
         >
-          <p className="text-[35px] md:text-[45px] lg:text-[65px]">25+</p>
+          <p className="text-[35px] md:text-[45px] lg:text-[65px]">30+</p>
           <p className="leading-tight text-[15px] sm:text-[20px] md:text-[22px] text-center lg:text-right">
             Industry Clients
           </p>
@@ -106,9 +111,9 @@ function StatsCards() {
           transition={{ duration: 0.5, delay: 0.25 }}
           className={`${styles.blueCard} rounded-[17px] w-[100%] h-[100px] sm:h-[180px] font-family: Kontrapunkt; flex flex-col justify-center items-center lg:items-end lg:pr-[50px] md:leading-[30px] lg:leading-[50px] col-span-2`}
         >
-          <p className="text-[35px] md:text-[45px] lg:text-[65px]">45</p>
+          <p className="text-[35px] md:text-[45px] lg:text-[65px]">70+</p>
           <p className="leading-tight text-[15px] sm:text-[20px] md:text-[22px] text-center lg:text-right">
-            Tech Articles
+            AI Articles Published
           </p>
         </motion.div>
       </div>
@@ -129,9 +134,9 @@ function StatsCards() {
           transition={{ duration: 0.5, delay: 0.25 }}
           className={`${styles.redCard} rounded-[17px] w-[100%] h-[100px] sm:h-[180px] font-family: Kontrapunkt; flex flex-col justify-center px-[10px] lg:px-0 items-center lg:items-start lg:pl-[50px] md:leading-[30px] lg:leading-[50px]`}
         >
-          <p className="text-[35px] md:text-[45px] lg:text-[65px]">35</p>
+          <p className="text-[35px] md:text-[45px] lg:text-[65px]">20</p>
           <p className="leading-tight text-[15px] sm:text-[20px] md:text-[22px] text-center lg:text-right">
-            Projects in 2023
+            Projects in 2026
           </p>
         </motion.div>
         <motion.div
@@ -149,7 +154,7 @@ function StatsCards() {
           className={`${styles.yellowCard} rounded-[17px] w-[100%] h-[100px] sm:h-[180px] font-family: Kontrapunkt; flex flex-col justify-center items-center lg:items-end lg:pr-[50px] md:leading-[30px] lg:leading-[50px]`}
         >
           <p className="lg:text-[65px] text-[35px]">2600+</p>
-          <p className="lg:text-[25px] text-[22px] text-center lg:text-right">Hours Read on Medium</p>
+          <p className="leading-tight text-[15px] sm:text-[20px] md:text-[22px] text-center lg:text-right">Hours Read on Medium</p>
         </motion.div>
       </div>
     </div>

@@ -137,7 +137,7 @@ function Navbar() {
               href="https://medium.com/qmind-ai"
               target="_blank"
             >
-              BLOG
+              QMIND TECH REVIEW
             </Link>
             <Link
               href="/projects"
@@ -148,7 +148,7 @@ function Navbar() {
             </Link>
             <Link
               onClick={() => setNav(false)}
-              href="https://www.instagram.com/p/CFZ_tICAi0i/"
+              href="https://www.instagram.com/qmind.ai/"
               target="_blank"
             >
               <Image src={INSTAGRAM} alt="Instagram" width={24} height={18} />

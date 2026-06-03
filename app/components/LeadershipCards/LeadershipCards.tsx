@@ -12,90 +12,50 @@ function LeadershipCards() {
       title: "Managing Directors",
       cards: [
         {
-          name: "Mitchell Sabbadini",
+          name: "Dolev Klein Harari",
           title: "Managing Director, Design",
-          img: "/headshots/Mitchell_Sabbadini.png",
+          img: "/headshots/Dolev_Klein_Harari.png",
           class: "leadershipCardDesign",
-          social: "https://www.linkedin.com/in/mitchell-sabbadini/",
+          social: "https://www.linkedin.com/in/dolevkharari/",
         },
         {
-          name: "Lauren Lidhar",
+          name: "Colin McLaughlin",
           title: "Managing Director, Development",
-          img: "/headshots/Lauren_Lidhar.png",
+          img: "/headshots/colin.png",
           class: "leadershipCardDevelopment",
-          social: "https://www.linkedin.com/in/lauren-lidhar/",
+          social: "https://www.linkedin.com/in/colinwmclaughlin/",
         },
         {
-          name: "Paul Wu",
+          name: "Cait Roach",
           title: "Managing Director, Operations",
-          img: "/headshots/Paul_Wu.png",
-          class: "leadershipCardOperations",
-          social: "https://www.linkedin.com/in/paul-wu-on/",
-        },
-      ],
-    },
-    {
-      title: "Design",
-      cards: [
-        {
-          name: "Josh Albom",
-          title: "Director of Design",
-          img: "/headshots/Josh_Albom.png",
-          class: "leadershipCardDesign",
-          social: "https://www.linkedin.com/in/josh-albom/",
-        },
-        {
-          name: "Josh Wagman",
-          title: "Director of Design",
-          img: "/headshots/Josh_Wagman.png",
-          class: "leadershipCardDesign",
-          social: "https://www.linkedin.com/in/josh-wagman-81099b252/",
-        },
-        {
-          name: "Shrika Vejandla",
-          title: "Director of Design",
-          img: "/headshots/Shrika_Vejandla.png",
-          class: "leadershipCardDesign",
-          social: "https://www.linkedin.com/in/shrikavejandla/",
-        },
-        {
-          name: "Zain Parihar",
-          title: "Director of Design",
-          img: "/headshots/Zain_Parihar.png",
-          class: "leadershipCardDesign",
-          social: "https://www.linkedin.com/in/zain-parihar/",
-        },
-        {
-          name: "Caitlin Roach",
-          title: "Director of Design",
           img: "/headshots/Caitlin_Roach.png",
-          class: "leadershipCardDesign",
+          class: "leadershipCardOperations",
           social: "https://www.linkedin.com/in/caitlin-roach/",
         },
-        {
-          name: "Jake Feldman",
-          title: "Director of Design",
-          img: "/headshots/Jake_Feldman.png",
-          class: "leadershipCardDesign",
-          social: "https://www.linkedin.com/in/jake-feldman-starosta-a43857296/",
-        },
-        {
-          name: "Michael Cronin",
-          title: "Director of Design, Consulting",
-          img: "/headshots/Michael_Cronin.png",
-          class: "leadershipCardDesign",
-          social: "https://www.linkedin.com/in/michael-cronin-20mjc8/",
-        },
-        {
-          name: "Colin Gould",
-          title: "Director of Design, Consulting",
-          img: "/headshots/Colin_Gould.png",
-          class: "leadershipCardDesign",
-          social: "https://www.linkedin.com/in/colin-gould15/",
-        },
       ],
     },
     {
+      title: "Design Supervisors",
+      cards: [
+        {
+          name: "Rosie Wang",
+          title: "Supervisor, Consulting",
+          img: "/headshots/rosie_wang.png",
+          class: "leadershipCardDesign",
+          social: "https://www.linkedin.com/in/rosiewang37/",
+        },
+        {
+          name: "Saleh Abdelrahman",
+          title: "Supervisor, Research",
+          img: "/headshots/saleh_abdelrahman.png",
+          class: "leadershipCardDesign",
+          social: "https://www.linkedin.com/in/saleh-abdelrahman-79a6ba18b/",
+        },
+        
+      ],
+    },
+    /*
+   {
       title: "Operations",
       cards: [
         {
@@ -176,6 +136,7 @@ function LeadershipCards() {
 
       ],
     },
+    */
   ];
 
   return (

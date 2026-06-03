@@ -57,6 +57,7 @@ import EVENT_SMITH3 from "@/assets/industry/inqu_smith_3.jpg";
 import EVENT_CONNECT1 from "@/assets/industry/connect_1.jpg";
 import EVENT_CONNECT2 from "@/assets/industry/connect_2.jpg";
 import EVENT_CONNECT3 from "@/assets/industry/connect_3.jpg";
+
 const EVENTS_HALF = [
   {
     fullImage: EVENT_SHOPIFY1,

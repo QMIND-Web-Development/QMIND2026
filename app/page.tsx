@@ -8,6 +8,7 @@ import INCUBATOR from "@/assets/incubator_image.png";
 import INCUBATOR_MOBILE from "@/assets/aws_mobile.png";
 import CardSlider from "./components/CardSlider";
 import CompanySlider from "./components/CompanySlider";
+import PicSlider from "./components/PicSlider";
 import { useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import react, { useEffect } from "react";
@@ -85,6 +86,19 @@ import EVENT_SMITH2 from "@/assets/industry/inqu_smith_2.jpg";
 import EVENT_SMITH3 from "@/assets/industry/inqu_smith_3.jpg";
 import EVENT_CONNECT1 from "@/assets/industry/connect_1.jpg";
 import EVENT_CONNECT2 from "@/assets/industry/connect_2.jpg";
+
+const QMIND_HALF = [
+  {fullImage: "/events/qmind1.jpg"},
+  {fullImage: "/events/qmind2.jpg"},
+  {fullImage: "/events/qmind3.jpg"},
+  {fullImage: "/events/qmind4.jpg"},
+  {fullImage: "/events/qmind5.jpg"},
+  {fullImage: "/events/qmind6.jpg"},
+
+];
+
+const QMIND = [...QMIND_HALF, ...QMIND_HALF]
+
 const EVENTS_HALF = [
   {
     fullImage: EVENT_SHOPIFY1,
@@ -450,9 +464,7 @@ export default function Home() {
                 <span className="text-[#F0B542]">unlock the power of AI</span>
               </h1>
               <p className="p-styles text-[18px] md:text-[20px]">
-                265 undergraduate students building, researching, and exploring
-                artificial intelligence, machine learning, blockchain and
-                quantum computing. We want you to{" "}
+                We are an organization of undergraduate students building, researching, and exploring artificial intelligence, machine learning, blockchain, and quantum computing. We want you to {" "}
                 <a
                   href=" https://discord.gg/Hj6SMEZHBp"
                   className="underline"
@@ -463,29 +475,12 @@ export default function Home() {
                 .
               </p>
             </div>
-
-            {/* Landing Page Buttons */}
-            <div className="flex flex-col lg:flex-row justify-center md:justify-start items-center gap-[24px] lg:mt-[25px] lg:w-full xl:mt-0">
-              <BtnLink
-                isExternalLink={true}
-                className={`min-w-[200px] !text-[13px] justify-center ${tradeGothic.className}`}
-                text="WORK WITH US"
-                href="mailto:design@qmind.ca"
-              />
-              <BtnLink
-                isExternalLink={true}
-                className={`min-w-[200px] !text-[13px] justify-center ${tradeGothic.className}`}
-                text="BECOME A SPONSOR"
-                href="mailto:operations@qmind.ca"
-              />
-              <BtnLink
-                isExternalLink={true}
-                className={`min-w-[200px] !text-[13px] justify-center ${tradeGothic.className}`}
-                text="PAST PROJECTS"
-                href="./2023_Lookbook.pdf"
-              />
-            </div>
           </div>
+
+
+
+        
+        
 
           {/* QMIND LOGO */}
           <div className="bg-[white] lg:w-[350px] xl:w-[380px] 2xl:w-[400px]   lg:h-[350px] xl:h-[380px] 2xl:h-[400px] hidden lg:flex justify-center items-center rounded-[32px]">
@@ -500,6 +495,26 @@ export default function Home() {
           </div>
         </div>
       </Container>
+    
+    {/* qmind SLIDER*/}
+      <div className="gap-7 flex flex-col text-center relative !overflow-hidden">
+
+        <div className="flex flex-col items-start gap-[24px] w-full">
+          <PicSlider cards={QMIND} slideLeft={false} />
+        </div>
+      </div>
+
+      {/* Design Team Projects */}
+      <Container className="flex flex-col items-center">
+        <Title
+          title="Design Team Projects"
+          subtitle="In Teams of 4-6 students, we tackle real world problems."
+        ></Title>
+        <div className="text-center flex flex-col leading-tight lg:gap-0 gap-2">
+          <HeadlineCard />
+        </div>
+      </Container>
+
 
       {/* What is QMIND? */}
       <Container className="flex flex-col items-center gap-4">
@@ -521,17 +536,6 @@ export default function Home() {
       {/* Sponsors Section */}
       <Sponsors tiers={SPONSOR_TIERS} />
 
-      {/* Design Team Projects */}
-      <Container className="flex flex-col items-center">
-        <Title
-          title="Design Team Projects"
-          subtitle="In Teams of 4-6 students, we tackle real world problems."
-        ></Title>
-        <div className="text-center flex flex-col leading-tight lg:gap-0 gap-2">
-          <HeadlineCard />
-        </div>
-      </Container>
-
       {/* Stats card */}
       <Container>
         <StatsCards />
@@ -541,7 +545,7 @@ export default function Home() {
       <div className="gap-7 flex flex-col text-center relative !overflow-hidden">
         <Title
           title="QMIND Events & Industry Speakers"
-          subtitle="Checkout our events!"
+          subtitle="Check out our events!"
         ></Title>
 
         <div className="flex flex-col items-start gap-[24px] w-full">
@@ -552,8 +556,8 @@ export default function Home() {
       {/* Our Members Love QMIND */}
       <Container className="items-center gap-[50px] w-[100%]">
         <Title
-          title="Our Members Love QMIND"
-          subtitle="Click On Them To See What They Think"
+          title="Our Members Love QMIND!"
+          subtitle="Click on them to hear about their experiences at QMIND."
         />
         <div className="flex flex-col lg:flex-row justify-start md:justify-center items-center mt-[-65px] md:mt-0">
           <TestimonialCard
@@ -629,7 +633,7 @@ export default function Home() {
         <div className="flex flex-col gap-6 text-center relative !overflow-hidden">
           <div className="text-center flex flex-col leading-tight lg:gap-0 gap-2 w-[90%] self-center">
             <p>
-              QMIND ALUMNI HAVE WORKED AT INNOVATIVE COMPANIES ACROSS THE WORLD
+              QMIND ALUMNI HAVE WORKED AT INNOVATIVE COMPANIES ACROSS THE WORLD!
             </p>
           </div>
           <div className="flex flex-col gap-[24px] w-full">
@@ -688,7 +692,7 @@ export default function Home() {
           <BtnLink
             isExternalLink={true}
             text="LEARN MORE"
-            href="https://www.instagram.com/inqubate.ai/?hl=en"
+            href="https://www.instagram.com/inqubate.qu/?hl=en"
             className={`${tradeGothic.className} `}
           />
         </div>

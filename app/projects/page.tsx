@@ -57,10 +57,10 @@ export default async function Projects({ searchParams }: any) {
         <div>
           {
             <Image
-              src={PLACEHOLDER}
+              src="/events/qmind4.jpg"
               alt="cool"
-              width={490}
-              height={377}
+              width={600}
+              height={400}
               className="rounded-[20px] shadow-xl"
             />
           }
