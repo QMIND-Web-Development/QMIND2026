@@ -475,6 +475,12 @@ export default function Home() {
                 .
               </p>
             </div>
+                          <BtnLink
+                isExternalLink={true}
+                className={`min-w-[200px] !text-[13px] justify-center ${tradeGothic.className}`}
+                text="WORK WITH US"
+                href="mailto:design@qmind.ca"
+              />
           </div>
 
 
