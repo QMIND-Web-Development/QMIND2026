@@ -10,7 +10,7 @@ The official website for QMIND, Canada's largest undergraduate AI organization. 
 ## setup 
 ```
 # Clone the repo
-git clone https://github.com/QMIND-ORG-NAME/QMIND2026.git
+git clone https://github.com/QMIND-Web-Development/QMIND2026.git
 cd QMIND2026
 
 # Install dependencies
