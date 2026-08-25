@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CAREERS_CONFIG, DEMOGRAPHIC_QUESTIONS, REFERRAL_OPTIONS } from "./config";
+import { CAREERS_CONFIG, DEMOGRAPHIC_QUESTIONS, getVideoPrompt, REFERRAL_OPTIONS } from "./config";
 import { submitApplication } from "./actions";
 import type { HiringProject } from "./types";
 import styles from "./careers.module.scss";
@@ -144,7 +144,7 @@ export default function CareersApplication({
     [filter, projects]
   );
   const topChoice = ranked[0];
-  const videoPrompt = topChoice ? CAREERS_CONFIG.videoPrompts[topChoice.category] : "Select your top project to reveal your prompt.";
+  const videoPrompt = topChoice ? getVideoPrompt(topChoice) : "Select your top project to reveal your prompt.";
 
   useEffect(() => {
     if (ranked.length !== 3) return;

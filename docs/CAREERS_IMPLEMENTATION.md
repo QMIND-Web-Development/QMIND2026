@@ -328,7 +328,7 @@ Edit `DEMOGRAPHIC_QUESTIONS` in `app/careers/config.ts`. Responses are stored as
 
 ### Changing video prompts
 
-Edit `CAREERS_CONFIG.videoPrompts`. Prompts are currently category-level Consulting and Research prompts.
+Video prompts are generated in `app/careers/config.ts` from each listing's title, descriptions, impact statement, tags, and category. Add a more specific keyword pattern above the fallback when a new project type needs a distinct prompt. Prompts should remain 1–3 sentences and be answerable from the applicant's experience.
 
 ### Updating Apps Script
 
