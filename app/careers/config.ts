@@ -48,8 +48,8 @@ export function getVideoPrompt(project: HiringProject) {
 }
 
 export const CAREERS_CONFIG = {
-  opensOn: "September 4, 2026",
-  closesOn: "To be announced",
+  opensOn: "September 7, 2026",
+  closesOn: "September 16, 2026",
   resumeMaxBytes: 8 * 1024 * 1024,
   resumeTypes: [
     "application/pdf",
