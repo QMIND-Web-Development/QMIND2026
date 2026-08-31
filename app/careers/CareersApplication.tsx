@@ -51,7 +51,7 @@ const formSchema = z
     funFact: z.string().trim().min(2, "Share a fun fact."),
     referralSource: z.string().min(1, "Choose an option."),
     referralOther: z.string().max(120),
-    socialConfirmed: z.boolean(),
+    socialConfirmed: z.boolean().refine(Boolean, "Please confirm that you have followed QMIND on Instagram and joined the Discord."),
     demographicResponses: z.record(z.string()),
     consent: z.boolean().refine(Boolean, "Consent is required to submit."),
   })
@@ -84,6 +84,7 @@ const fieldsByStep: Array<Array<keyof FormValues>> = [
     "funFact",
     "referralSource",
     "referralOther",
+    "socialConfirmed",
   ],
   [],
   ["consent"],
@@ -217,8 +218,10 @@ export default function CareersApplication({
       <section className={styles.success} aria-labelledby="success-title">
         <p className={styles.kicker}>Application received</p>
         <h1 id="success-title">Thank you for applying.</h1>
-        <p>Your application is now read-only. Keep this reference number for your records.</p>
-        <code>{applicationId}</code>
+        <p>
+          Your application was received and we're excited to meet you! If you have any questions or concerns,
+          please send an email to <a href="mailto:design@qmind.ca">design@qmind.ca</a>
+        </p>
       </section>
     );
   }
@@ -381,6 +384,7 @@ export default function CareersApplication({
               <div className={styles.sectionIntro}>
                 <h2 id="questions-heading">Application questions</h2>
                 <p>We value thoughtful, specific answers. Technical experience is not the only experience that matters.</p>
+                <p><strong>Please do not use Generative AI in these responses. This is our opportunity to get to know YOU!</strong></p>
               </div>
               <div className={styles.fieldGrid}>
                 <Field label="LinkedIn profile (optional)" error={errors.linkedIn?.message}><input {...register("linkedIn")} type="url" placeholder="https://linkedin.com/in/..." /></Field>
@@ -417,9 +421,23 @@ export default function CareersApplication({
                 )}
               </div>
               <label className={styles.checkbox}>
-                <input type="checkbox" {...register("socialConfirmed")} />
-                <span>I have followed QMIND on Instagram and LinkedIn and joined the Discord.</span>
+                <input
+                  id="social-confirmed"
+                  type="checkbox"
+                  {...register("socialConfirmed")}
+                  aria-invalid={Boolean(errors.socialConfirmed)}
+                  aria-describedby={errors.socialConfirmed ? "social-confirmed-error" : undefined}
+                />
+                <span>
+                  I have followed QMIND on{" "}
+                  <a href="https://instagram.com/qmind.ai/" target="_blank" rel="noreferrer">Instagram</a>
+                  {" "}and joined the{" "}
+                  <a href="https://discord.gg/U3KueACtJe" target="_blank" rel="noreferrer">Discord</a>.
+                </span>
               </label>
+              {errors.socialConfirmed?.message && (
+                <p id="social-confirmed-error" className={styles.errorText}>{errors.socialConfirmed.message}</p>
+              )}
             </section>
           )}
 

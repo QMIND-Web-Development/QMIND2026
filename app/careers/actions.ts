@@ -29,7 +29,7 @@ const applicationSchema = z.object({
   funFact: z.string().trim().min(2).max(500),
   referralSource: z.enum(["Social Media", "Word of Mouth", "Through Queen's", "Google", "Other"]),
   referralOther: z.string().trim().max(120).optional(),
-  socialConfirmed: z.boolean(),
+  socialConfirmed: z.boolean().refine(Boolean, "Please confirm that you have followed QMIND on Instagram and joined the Discord."),
   demographicResponses: z.record(z.string()),
   consent: z.literal(true),
   rankedProjectIds: z.array(z.number().int()).length(3).refine((ids) => new Set(ids).size === 3),

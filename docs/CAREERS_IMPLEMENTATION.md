@@ -130,7 +130,7 @@ Queen's email addresses must end in `@queensu.ca`.
 - Storage bucket: `application-resumes`
 - Bucket visibility: private
 
-The server checks extension, MIME type, and size again before uploading. The Google Sheet stores a protected application link, not a public Supabase storage URL. Reviewers must sign in to the QMIND website; the application then creates a Supabase signed URL that expires after 60 seconds.
+The server checks extension, MIME type, and size again before uploading. The Google Sheet stores a bearer application link, not a public Supabase storage URL. Anyone with the complete UUID link can open the resume; the application still creates a Supabase signed URL that expires after 60 seconds.
 
 ### Application questions
 
@@ -354,8 +354,8 @@ Supabase remains the source of truth if spreadsheet export fails. A failed recor
 
 - Service-role access is server-only.
 - Resumes are stored in a private bucket.
-- Sheets contains protected application links rather than raw storage paths.
-- Resume links require an authenticated QMIND website user and redirect to a 60-second signed URL.
+- Sheets contains bearer application links rather than raw storage paths.
+- Resume links redirect to a 60-second signed URL. Access to the spreadsheet should be limited because anyone with a complete link can open that resume.
 - Applications cannot be updated by public users.
 - The webhook uses a high-entropy shared secret.
 - Spreadsheet cells are protected against formula injection.
