@@ -149,6 +149,7 @@ export async function submitApplication(formData: FormData): Promise<SubmitAppli
       applicationId,
       submittedAt,
       resumeStoragePath: resumePath,
+      resumeUrl: getResumeUrl(applicationId),
     });
     spreadsheetStatus = spreadsheet.status;
   } catch {
@@ -161,4 +162,14 @@ export async function submitApplication(formData: FormData): Promise<SubmitAppli
     .eq("id", applicationId);
 
   return { ok: true, applicationId, spreadsheetStatus };
+}
+
+function getResumeUrl(applicationId: string) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "");
+
+  if (!siteUrl) {
+    throw new Error("NEXT_PUBLIC_SITE_URL is not configured");
+  }
+
+  return `${siteUrl}/careers/resumes/${applicationId}`;
 }

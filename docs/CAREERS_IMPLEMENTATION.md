@@ -130,7 +130,7 @@ Queen's email addresses must end in `@queensu.ca`.
 - Storage bucket: `application-resumes`
 - Bucket visibility: private
 
-The server checks extension, MIME type, and size again before uploading. The Google Sheet stores the private storage path, not a public resume URL.
+The server checks extension, MIME type, and size again before uploading. The Google Sheet stores a protected application link, not a public Supabase storage URL. Reviewers must sign in to the QMIND website; the application then creates a Supabase signed URL that expires after 60 seconds.
 
 ### Application questions
 
@@ -222,6 +222,7 @@ The Apps Script project requires:
 
 - `WEBHOOK_SECRET`
 - `SPREADSHEET_ID`
+- `SITE_URL` (for example, `https://www.qmind.ca`)
 
 `SPREADSHEET_ID` is the value between `/d/` and `/edit` in the spreadsheet URL.
 
@@ -245,7 +246,10 @@ The `Applications` worksheet contains the canonical export. The webhook:
 - Checks for the application UUID in column A.
 - Rejects duplicate row creation.
 - Sanitizes values beginning with spreadsheet formula characters.
+- Adds a clickable `Open resume` link for each applicant.
 - Appends one row for each new application.
+
+After updating the Apps Script, run `setupWorkbook()` once. It renames the resume column and converts existing applicants' storage paths into protected resume links.
 
 ### Reviewer workspace
 
@@ -287,6 +291,7 @@ Create `.env.local` from `.env.example` and configure:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SITE_URL=https://www.qmind.ca
 SUPABASE_SERVICE_ROLE_KEY=
 GOOGLE_SHEETS_WEBHOOK_URL=
 GOOGLE_SHEETS_WEBHOOK_SECRET=
@@ -302,11 +307,11 @@ Rules:
 ## Initial setup checklist
 
 1. Copy `.env.example` to `.env.local`.
-2. Add Supabase URL, anonymous key, and service-role key.
+2. Add Supabase URL, anonymous key, service-role key, and site URL.
 3. Apply the Supabase migration.
 4. Create the Google Sheet.
 5. Add `docs/google-sheets-webhook.gs` to its Apps Script project.
-6. Add `WEBHOOK_SECRET` and `SPREADSHEET_ID` Script Properties.
+6. Add `WEBHOOK_SECRET`, `SPREADSHEET_ID`, and `SITE_URL` Script Properties.
 7. Deploy the Apps Script as a web app.
 8. Add its `/exec` URL and secret to `.env.local`.
 9. Run `setupWorkbook()` from Apps Script.
@@ -349,7 +354,8 @@ Supabase remains the source of truth if spreadsheet export fails. A failed recor
 
 - Service-role access is server-only.
 - Resumes are stored in a private bucket.
-- Public resume URLs are not written to Sheets.
+- Sheets contains protected application links rather than raw storage paths.
+- Resume links require an authenticated QMIND website user and redirect to a 60-second signed URL.
 - Applications cannot be updated by public users.
 - The webhook uses a high-entropy shared secret.
 - Spreadsheet cells are protected against formula injection.
@@ -364,6 +370,5 @@ Reviewer access to the spreadsheet and Supabase project should be limited to aut
 - Obtain leadership approval for demographic wording.
 - Decide whether to replace category-level video prompts with project-specific prompts.
 - Add server-side opening and closing enforcement.
-- Add a protected resume-download workflow for reviewers.
 - Consider the authenticated PM Portal reach goal.
 - Define a data-retention and deletion schedule after the hiring cycle.

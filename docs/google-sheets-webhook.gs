@@ -59,8 +59,10 @@ function doPost(e) {
       application.socialConfirmed === true,
       safeCell(JSON.stringify(application.demographicResponses || {})),
       application.consent === true,
-      safeCell(application.resumeStoragePath),
+      safeCell(getResumeUrl(application)),
     ]);
+
+    setResumeLink(sheet, sheet.getLastRow(), getResumeUrl(application));
 
     appendReviewQueueRow(application);
     refreshProjectDemand();
@@ -79,6 +81,7 @@ function doPost(e) {
  * It creates and formats the reviewer-facing tabs from existing applications.
  */
 function setupWorkbook() {
+  backfillResumeLinks();
   formatApplicationsSheet();
   rebuildReviewQueue();
   buildApplicantViewer();
@@ -395,12 +398,51 @@ function getApplicationsSheet() {
       "Social channels confirmed",
       "Demographic responses",
       "Consent",
-      "Private resume storage path",
+      "Resume",
     ]);
     sheet.setFrozenRows(1);
   }
 
   return sheet;
+}
+
+function getResumeUrl(application) {
+  if (application.resumeUrl) return application.resumeUrl;
+  return getSiteUrl() + "/careers/resumes/" + encodeURIComponent(application.applicationId);
+}
+
+function getSiteUrl() {
+  const siteUrl = PropertiesService.getScriptProperties().getProperty("SITE_URL");
+  if (!siteUrl) throw new Error("SITE_URL is not configured");
+  return siteUrl.replace(/\/+$/, "");
+}
+
+function setResumeLink(sheet, rowNumber, url) {
+  const link = SpreadsheetApp.newRichTextValue()
+    .setText("Open resume")
+    .setLinkUrl(url)
+    .build();
+  sheet.getRange(rowNumber, 25).setRichTextValue(link);
+}
+
+/** Convert existing private storage paths in Applications column Y to links. */
+function backfillResumeLinks() {
+  const sheet = getApplicationsSheet();
+  const rowCount = sheet.getLastRow() - 1;
+  sheet.getRange(1, 25).setValue("Resume");
+  if (rowCount <= 0) return;
+
+  const applicationIds = sheet.getRange(2, 1, rowCount, 1).getDisplayValues();
+  const links = applicationIds.map(function (row) {
+    const applicationId = String(row[0]).trim();
+    if (!applicationId) return [SpreadsheetApp.newRichTextValue().setText("").build()];
+    return [SpreadsheetApp.newRichTextValue()
+      .setText("Open resume")
+      .setLinkUrl(getResumeUrl({ applicationId: applicationId }))
+      .build()];
+  });
+
+  sheet.getRange(2, 25, links.length, 1).setRichTextValues(links);
 }
 
 function safeCell(value) {

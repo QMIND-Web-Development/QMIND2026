@@ -4,6 +4,7 @@ type SpreadsheetApplication = ApplicationPayload & {
   applicationId: string;
   submittedAt: string;
   resumeStoragePath: string;
+  resumeUrl: string;
 };
 
 export async function exportApplicationToSpreadsheet(
@@ -16,6 +17,10 @@ export async function exportApplicationToSpreadsheet(
     return { status: "not_configured" as const };
   }
 
+  // Keep the private storage path inside the server application flow. The
+  // spreadsheet only needs the protected application link.
+  const { resumeStoragePath: _resumeStoragePath, ...spreadsheetApplication } = application;
+
   const response = await fetch(webhookUrl, {
     method: "POST",
     headers: {
@@ -23,7 +28,7 @@ export async function exportApplicationToSpreadsheet(
     },
     body: JSON.stringify({
       webhookSecret,
-      application,
+      application: spreadsheetApplication,
     }),
     cache: "no-store",
   });
