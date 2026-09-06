@@ -185,9 +185,14 @@
 
 .prompt { display: grid; gap: .8rem; margin: 1rem 0 1.5rem; padding: 1.5rem; border-left: 3px solid var(--careers-blue); background: #202331; }
 .prompt span { color: #aebcff; font-size: .85rem; }
+.promptText { white-space: pre-wrap; overflow-wrap: anywhere; }
+.promptVideo { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: .5rem; background: #000; }
 .prompt strong { max-width: 60ch; font-family: var(--font-kontrapunkt); font-size: 1.2rem; line-height: 1.45; }
 .checkbox, .consent { display: flex; gap: .8rem; align-items: flex-start; padding: 1.2rem 0; color: var(--careers-muted); line-height: 1.45; cursor: pointer; }
 .checkbox input, .consent input { width: 1.15rem; height: 1.15rem; margin-top: .15rem; accent-color: var(--careers-gold); }
+.checkbox a { color: #86a3ff; text-decoration: underline; text-underline-offset: 3px; }
+.checkbox a:hover { color: var(--careers-gold); }
+.checkbox a:focus-visible { outline: 3px solid rgba(240, 181, 66, .45); outline-offset: 3px; }
 .consent { margin-top: 1.5rem; border-top: 1px solid var(--careers-line); color: var(--careers-text); }
 
 .reviewBlock, .demographics { margin-bottom: 1rem; padding: 1.5rem; border: 1px solid var(--careers-line); border-radius: .75rem; background: var(--careers-surface); }

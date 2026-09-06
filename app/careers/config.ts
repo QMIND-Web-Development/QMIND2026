@@ -13,10 +13,12 @@ function projectText(project: HiringProject) {
 }
 
 /**
- * Prompts are derived from the published listing so new projects receive a
- * relevant prompt automatically, without requiring a schema change.
+ * Custom text takes precedence over generated text. Video-only prompts do not
+ * receive a second, unrelated question; unconfigured projects keep the fallback.
  */
 export function getVideoPrompt(project: HiringProject) {
+  if (project.promptText?.trim()) return project.promptText.trim();
+  if (project.promptVideoUrl) return "";
   const text = projectText(project);
   const title = project.projectTitle;
 

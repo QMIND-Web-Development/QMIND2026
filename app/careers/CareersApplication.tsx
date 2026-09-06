@@ -269,7 +269,7 @@ export default function CareersApplication({
             <section aria-labelledby="projects-heading">
               <div className={styles.sectionIntro}>
                 <h2 id="projects-heading">Choose your top three</h2>
-                <p>Select three distinct projects. Your selection order determines your video prompt.</p>
+                <p>Select three distinct projects. Your top choice determines your application prompt.</p>
               </div>
 
               <div className={styles.ranking} aria-label="Ranked project choices">
@@ -394,8 +394,11 @@ export default function CareersApplication({
                 <textarea {...register("additionalProjects")} rows={3} />
               </Field>
               <div className={styles.prompt}>
-                <span>Video prompt for {topChoice?.projectTitle || "your top choice"}</span>
-                <strong>{videoPrompt}</strong>
+                <span>Application prompt for {topChoice?.projectTitle || "your top choice"}</span>
+                {topChoice?.promptVideoUrl && (
+                  <PromptVideo key={`${topChoice.id}:${topChoice.promptVideoUrl}`} url={topChoice.promptVideoUrl} title={topChoice.projectTitle} />
+                )}
+                {videoPrompt && <strong className={styles.promptText}>{videoPrompt}</strong>}
               </div>
               <Field label="Shareable video link" error={errors.videoUrl?.message} hint="Set Google Drive permissions to Anyone with the link can view.">
                 <input {...register("videoUrl")} type="url" placeholder="https://drive.google.com/..." />
@@ -403,7 +406,7 @@ export default function CareersApplication({
               <Field label="Why do you want to join QMIND?" error={errors.whyQmind?.message} hint={`${words(values.whyQmind)} / 200 words`}>
                 <textarea {...register("whyQmind")} rows={7} />
               </Field>
-              <Field label="What skills and experiences will help you excel as a QMIND Design Team Member?" error={errors.skillsExperience?.message} hint={`${words(values.skillsExperience)} / 200 words`}>
+              <Field inputId="field-what-skills-and-experiences-will-help-you-excel-as-a-qmind-design-team-member-" label="What skills and experiences will help you excel as a QMIND member?" error={errors.skillsExperience?.message} hint={`${words(values.skillsExperience)} / 200 words`}>
                 <textarea {...register("skillsExperience")} rows={7} />
               </Field>
               <Field label="What is a fun fact about you?" error={errors.funFact?.message}>
@@ -510,18 +513,36 @@ export default function CareersApplication({
   );
 }
 
+function PromptVideo({ url, title }: { url: string; title: string }) {
+  return (
+    <div>
+      <iframe
+        className={styles.promptVideo}
+        src={url}
+        title={`Project manager's prompt for ${title}`}
+        allow="autoplay; fullscreen"
+        allowFullScreen
+        loading="lazy"
+      />
+      <p><a href={url} target="_blank" rel="noreferrer">Open video in Google Drive</a></p>
+    </div>
+  );
+}
+
 function Field({
   label,
+  inputId,
   hint,
   error,
   children,
 }: {
   label: string;
+  inputId?: string;
   hint?: string;
   error?: string;
   children: React.ReactElement;
 }) {
-  const id = `field-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  const id = inputId || `field-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
     <label className={styles.field} htmlFor={id}>
       <span>{label}</span>
