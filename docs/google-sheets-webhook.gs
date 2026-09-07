@@ -57,7 +57,7 @@ function doPost(e) {
       safeCell(application.referralSource),
       safeCell(application.referralOther),
       application.socialConfirmed === true,
-      "", // Reserved legacy column; individual demographics are never exported.
+      safeCell(JSON.stringify(application.demographicResponses || {})),
       application.consent === true,
       safeCell(getResumeUrl(application)),
     ]);
@@ -81,7 +81,6 @@ function doPost(e) {
  * It creates and formats the reviewer-facing tabs from existing applications.
  */
 function setupWorkbook() {
-  removeLegacyDemographics();
   backfillResumeLinks();
   formatApplicationsSheet();
   rebuildReviewQueue();
@@ -330,18 +329,7 @@ function refreshDemographicSummary() {
   const target = getSpreadsheet().getSheetByName("Demographic Summary");
   if (!target) return;
   target.clear();
-  target.getRange("A1").setValue("Demographics are held separately from recruitment review data.");
-}
-
-/** Run setupWorkbook after deploying the updated server and Apps Script. */
-function removeLegacyDemographics() {
-  const source = getApplicationsSheet();
-  if (source.getLastRow() > 1) {
-    source.getRange(2, 23, source.getLastRow() - 1, 1).clearContent();
-  }
-  source.getRange(1, 23).setValue("Reserved");
-  // buildApplicantViewer also clears any old demographic lookup formulas.
-  refreshDemographicSummary();
+  target.getRange("A1").setValue("Individual demographic responses are included in Applications. Restrict this workbook to authorized hiring personnel.");
 }
 
 function getApplicationsSheet() {
@@ -377,12 +365,15 @@ function getApplicationsSheet() {
       "Referral source",
       "Referral other",
       "Social channels confirmed",
-      "Reserved",
+      "Demographic responses",
       "Consent",
       "Resume",
     ]);
     sheet.setFrozenRows(1);
   }
+
+  // Upgrade workbooks created by the privacy migration without clearing data.
+  sheet.getRange(1, 23).setValue("Demographic responses");
 
   return sheet;
 }

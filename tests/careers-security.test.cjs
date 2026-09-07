@@ -147,7 +147,7 @@ test('demographics reject unknown keys, formula payloads, and unexpected answers
   }
 });
 
-test('reviewer export omits demographics and private storage paths', async () => {
+test('reviewer export includes demographics and omits private storage paths', async () => {
   const originalFetch = global.fetch;
   process.env.GOOGLE_SHEETS_WEBHOOK_URL = 'https://example.org/test';
   process.env.GOOGLE_SHEETS_WEBHOOK_SECRET = 'test';
@@ -156,7 +156,7 @@ test('reviewer export omits demographics and private storage paths', async () =>
   try {
     const { exportApplicationToSpreadsheet } = loadTs('app/careers/spreadsheet.ts');
     await exportApplicationToSpreadsheet({ applicationId: 'test', demographicResponses: { disabilityOrNeurodivergence: 'Yes' }, resumeStoragePath: 'private/path', resumeUrl: 'https://example.org/resume' });
-    assert.equal(Object.hasOwn(sent.application, 'demographicResponses'), false);
+    assert.deepEqual(sent.application.demographicResponses, { disabilityOrNeurodivergence: 'Yes' });
     assert.equal(Object.hasOwn(sent.application, 'resumeStoragePath'), false);
   } finally {
     global.fetch = originalFetch;
@@ -197,7 +197,7 @@ test('public submissions use canonical project titles and atomically save privat
   assert.deepEqual(writes[1].p_demographics, { firstGeneration: 'Yes' });
 });
 
-test('spreadsheet rebuilds escape formulas and cleanup removes old demographic cells', () => {
+test('spreadsheet rebuilds escape formulas and restores demographic export cells', () => {
   const context = vm.createContext({});
   vm.runInContext(fs.readFileSync('docs/google-sheets-webhook.gs', 'utf8'), context);
   const injections = ['=Applications!E2', '+1', '-1', '@SUM(A1)', '\t=Applications!E2'];
@@ -221,8 +221,8 @@ test('spreadsheet rebuilds escape formulas and cleanup removes old demographic c
   context.rebuildReviewQueue();
   assert.equal(writes[0][2], "'=Applications!E2");
   context.getSpreadsheet = () => ({ getSheetByName: () => target });
-  context.removeLegacyDemographics();
-  assert.ok(clears.includes('raw demographics'));
+  context.refreshDemographicSummary();
   assert.ok(clears.includes('summary'));
-  assert.doesNotMatch(fs.readFileSync('docs/google-sheets-webhook.gs', 'utf8'), /\["Demographics", "W"\]/);
+  assert.match(fs.readFileSync('docs/google-sheets-webhook.gs', 'utf8'), /safeCell\(JSON\.stringify\(application\.demographicResponses \|\| \{\}\)\)/);
+  assert.match(fs.readFileSync('docs/google-sheets-webhook.gs', 'utf8'), /"Demographic responses"/);
 });

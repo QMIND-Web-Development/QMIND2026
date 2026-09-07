@@ -151,7 +151,7 @@ function Navbar() {
               className={pathname == "/careers" ? styles.activePage : ""}
               onClick={() => setNav(false)}
             >
-              CAREERS
+              APPLY
             </Link>
             <Link
               onClick={() => setNav(false)}

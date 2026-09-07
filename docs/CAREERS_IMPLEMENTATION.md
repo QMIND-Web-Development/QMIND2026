@@ -260,10 +260,10 @@ The `Applications` worksheet contains the canonical export. The webhook:
 - Adds a clickable `Open resume` link for each applicant.
 - Appends one row for each new application.
 
-After updating the Apps Script, run `setupWorkbook()` once. It clears legacy
-individual demographic data from column W and rebuilds the Applicant Viewer
-without demographic lookups. Column W stays reserved to preserve other column
-positions. Resume paths are converted into bearer resume links.
+After updating the Apps Script, run `setupWorkbook()` once. It updates the
+legacy column W header and rebuilds the Applicant Viewer without demographic
+lookups. Column W contains the submitted demographic JSON for authorized
+hiring personnel. Resume paths are converted into bearer resume links.
 
 ### Reviewer workspace
 
@@ -290,10 +290,9 @@ Displays first-choice, second-choice, third-choice, and total-interest counts fo
 
 #### Demographic Summary
 
-No demographic data is exported to this reviewer workbook. Setup clears any
-legacy Demographic Summary tab. Any future aggregate reporting should be
-prepared separately by a designated data administrator with small-group
-suppression, rather than exposing linked individual responses to reviewers.
+Individual responses are exported only in the Applications tab. This summary
+tab does not duplicate them; restrict the workbook to authorized hiring
+personnel and use the Applications tab when demographic review is required.
 
 #### Applications
 
@@ -379,7 +378,7 @@ Supabase remains the source of truth if spreadsheet export fails. A failed recor
 - Applications cannot be updated by public users.
 - The webhook uses a high-entropy shared secret.
 - Spreadsheet cells are protected against formula injection.
-- Individual demographics are held in a restricted private schema and excluded from reviewer exports.
+- Individual demographics remain in the restricted private schema as the source of truth and are also exported to the access-controlled reviewer workbook.
 - Preferred email uniqueness prevents accidental duplicate submissions.
 
 Reviewer access to the spreadsheet and Supabase project should be limited to authorized QMIND hiring personnel.
@@ -392,12 +391,12 @@ Reviewer access to the spreadsheet and Supabase project should be limited to aut
 2. Pause application submissions for the migration/deploy window. Apply the
    demographic migration and deploy the updated server together; the previous
    server expects the demographic column that migration `202609060005` moves.
-3. Deploy the updated Apps Script and run `setupWorkbook()` to remove legacy
-   demographic cells and viewer formulas. Existing Google Sheets version
-   history, downloaded copies, and earlier exports are not erased by this
-   script. For a workbook that already held individual demographics, create a
-   fresh reviewer workbook containing only the cleaned review data, rebind the
-   script to it, and restrict the original workbook to data administrators.
+3. Deploy the updated Apps Script and run `setupWorkbook()` to restore the
+   demographic column header and remove demographic lookups from the Applicant
+   Viewer. Existing Google Sheets version history, downloaded copies, and
+   earlier exports are not erased by this script. Restrict the workbook to
+   authorized hiring personnel because Applications contains individual
+   demographic responses.
 4. Verify a controlled test submission, resume storage, reviewer export, and
    deployed access policies before reopening submissions.
 
