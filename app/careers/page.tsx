@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, downloadImage } from "@/utils/supabase/server";
 import CareersApplication from "./CareersApplication";
 import type { HiringProject } from "./types";
 import { getDrivePreviewUrl } from "./driveVideo";
@@ -16,14 +16,24 @@ export default async function CareersPage() {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("projects")
-    .select("id, projectTitle, category, shortDescription, impactDescription, tags")
+    .select("id, projectTitle, category, shortDescription, impactDescription, tags, projectImages")
     .in("category", ["Consulting", "Research"])
     .eq("published", true)
     .eq("is_hiring", true)
     .order("category")
     .order("projectTitle");
 
-  const projects = (data || []) as HiringProject[];
+  const projects = await Promise.all(
+    ((data || []) as HiringProject[]).map(async (project) => {
+      const imagePath = project.projectImages?.[0];
+      const image = imagePath ? await downloadImage(imagePath) : null;
+
+      return {
+        ...project,
+        projectImageUrl: image?.publicUrl || null,
+      };
+    })
+  );
   if (projects.length) {
     // Keep listings usable when the optional prompt configuration is unavailable.
     const { data: prompts, error: promptError } = await supabase

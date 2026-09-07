@@ -323,6 +323,17 @@ export default function CareersApplication({
                     const isExpanded = expanded.has(project.id);
                     return (
                       <article className={`${styles.project} ${rank >= 0 ? styles.selectedProject : ""}`} key={project.id}>
+                        {project.projectImageUrl && (
+                          <div className={styles.projectImage}>
+                            <Image
+                              src={project.projectImageUrl}
+                              alt={`${project.projectTitle} project photo`}
+                              fill
+                              sizes="(max-width: 640px) 100vw, 22rem"
+                              unoptimized
+                            />
+                          </div>
+                        )}
                         <div className={styles.projectHeading}>
                           <div>
                             <span>{project.category}</span>

@@ -5,6 +5,8 @@ export type HiringProject = {
   shortDescription: string;
   impactDescription?: string | null;
   tags?: string[] | null;
+  projectImages?: string[] | null;
+  projectImageUrl?: string | null;
   promptText?: string | null;
   promptVideoUrl?: string | null;
 };
