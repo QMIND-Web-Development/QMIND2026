@@ -100,6 +100,7 @@ export default function CareersApplication({
   const [step, setStep] = useState(0);
   const [filter, setFilter] = useState<CategoryFilter>("All");
   const [ranked, setRanked] = useState<HiringProject[]>([]);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<number>>(() => new Set());
   const [submissionError, setSubmissionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [applicationId, setApplicationId] = useState("");
@@ -167,6 +168,15 @@ export default function CareersApplication({
       if (destination < 0 || destination >= current.length) return current;
       const next = [...current];
       [next[index], next[destination]] = [next[destination], next[index]];
+      return next;
+    });
+  }
+
+  function toggleDescription(projectId: number) {
+    setExpandedDescriptions((current) => {
+      const next = new Set(current);
+      if (next.has(projectId)) next.delete(projectId);
+      else next.add(projectId);
       return next;
     });
   }
@@ -318,32 +328,54 @@ export default function CareersApplication({
                   ) : (
                     <div className={styles.projectList}>
                       {filteredProjects.map((project) => {
-                    const rank = ranked.findIndex((item) => item.id === project.id);
-                    return (
-                      <article className={`${styles.project} ${rank >= 0 ? styles.selectedProject : ""}`} key={project.id}>
-                        {project.projectImageUrl && (
-                          <div className={styles.projectImage}>
-                            <Image
-                              src={project.projectImageUrl}
-                              alt={`${project.projectTitle} project photo`}
-                              fill
-                              sizes="(max-width: 640px) 100vw, 22rem"
-                              unoptimized
-                            />
-                          </div>
-                        )}
-                        <div className={styles.projectHeading}>
-                          <div>
-                            <span>{project.category}</span>
-                            <h3>{project.projectTitle}</h3>
-                          </div>
-                          <button type="button" className={styles.selectButton} disabled={rank < 0 && ranked.length === 3} onClick={() => selectProject(project)}>
-                            {rank >= 0 ? `${["Top", "Second", "Third"][rank]} choice` : "Select project"}
-                          </button>
-                        </div>
-                        <p>{project.fullDescription || project.shortDescription}</p>
-                      </article>
-                    );
+                        const rank = ranked.findIndex((item) => item.id === project.id);
+                        const description = project.fullDescription || project.shortDescription;
+                        const canExpandDescription = description.length > 280;
+                        const isDescriptionExpanded = expandedDescriptions.has(project.id);
+                        const descriptionId = `project-description-${project.id}`;
+                        return (
+                          <article className={`${styles.project} ${rank >= 0 ? styles.selectedProject : ""}`} key={project.id}>
+                            {project.projectImageUrl && (
+                              <div className={styles.projectImage}>
+                                <Image
+                                  src={project.projectImageUrl}
+                                  alt={`${project.projectTitle} project photo`}
+                                  fill
+                                  sizes="(max-width: 640px) 100vw, 22rem"
+                                  unoptimized
+                                />
+                              </div>
+                            )}
+                            <div className={styles.projectHeading}>
+                              <div>
+                                <span>{project.category}</span>
+                                <h3>{project.projectTitle}</h3>
+                              </div>
+                              <button type="button" className={styles.selectButton} disabled={rank < 0 && ranked.length === 3} onClick={() => selectProject(project)}>
+                                {rank >= 0 ? `${["Top", "Second", "Third"][rank]} choice` : "Select project"}
+                              </button>
+                            </div>
+                            <div className={styles.projectDescription}>
+                              <p
+                                id={descriptionId}
+                                className={canExpandDescription && !isDescriptionExpanded ? styles.descriptionPreview : undefined}
+                              >
+                                {description}
+                              </p>
+                              {canExpandDescription && (
+                                <button
+                                  type="button"
+                                  className={styles.readMoreButton}
+                                  aria-controls={descriptionId}
+                                  aria-expanded={isDescriptionExpanded}
+                                  onClick={() => toggleDescription(project.id)}
+                                >
+                                  {isDescriptionExpanded ? "Read Less" : "Read More"}
+                                </button>
+                              )}
+                            </div>
+                          </article>
+                        );
                       })}
                     </div>
                   )}

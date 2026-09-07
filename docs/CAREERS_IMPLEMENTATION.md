@@ -61,7 +61,7 @@ Supabase is the source of truth. Google Sheets is the operations and review surf
 
 ### Infrastructure
 
-- `supabase/migrations/202608220001_create_applications.sql`
+- `supabase/migrations/careers/202608220001_create_applications.sql`
   - Creates the `applications` table.
   - Creates and configures the private `application-resumes` bucket.
   - Enables row-level security on applications.

@@ -73,10 +73,11 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
       insert into public.projects ("projectTitle", "projectImages", "githubUrl", "pmEmail", published)
         values ('DCP Federated Learning', array['keep-image'], 'keep-repo', 'owner@example.org', false);
     `);
-    const migrations = fs.readdirSync('supabase/migrations').filter((name) => name.endsWith('.sql')).sort();
+    const migrationDirectory = 'supabase/migrations/careers';
+    const migrations = fs.readdirSync(migrationDirectory).filter((name) => name.endsWith('.sql')).sort();
     const legacy = sampleApplication();
     for (const name of migrations) {
-      await db.exec(fs.readFileSync(path.join('supabase/migrations', name), 'utf8'));
+      await db.exec(fs.readFileSync(path.join(migrationDirectory, name), 'utf8'));
       if (name === '202608220001_create_applications.sql') {
         await db.query(`insert into public.applications select * from jsonb_populate_record(null::public.applications, $1::jsonb)`,
           [JSON.stringify({ ...legacy, demographic_responses: { genderIdentity: 'Woman' } })]);
@@ -87,9 +88,9 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
     }
     assert.equal(migrations.length, 9);
     assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 13);
-    await db.exec(fs.readFileSync('supabase/migrations/202609060004_seed_2026_hiring_projects.sql', 'utf8'));
+    await db.exec(fs.readFileSync(path.join(migrationDirectory, '202609060004_seed_2026_hiring_projects.sql'), 'utf8'));
     assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 13, 'seed rerun does not duplicate projects');
-    await db.exec(fs.readFileSync('supabase/migrations/202609070002_seed_additional_hiring_projects.sql', 'utf8'));
+    await db.exec(fs.readFileSync(path.join(migrationDirectory, '202609070002_seed_additional_hiring_projects.sql'), 'utf8'));
     assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 13, 'additional seed rerun does not duplicate projects');
     const existing = (await db.query('select "projectImages", "githubUrl", "pmEmail" from public.projects where id = 1')).rows[0];
     assert.deepEqual(existing, { projectImages: ['keep-image'], githubUrl: 'keep-repo', pmEmail: 'owner@example.org' });
