@@ -27,8 +27,8 @@ export default function RootLayout({
       <html lang="en" className="bg-[#161616]">
         <head>
           <link
-            rel="shortcut icon"
-            href="%PUBLIC_URL%/cropped-New-QMIND-Logo-32x32.png"
+            rel="icon"
+            href="/favicon.ico"
           />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <meta name="theme-color" content="#262626" />

@@ -101,6 +101,7 @@ export default function CareersApplication({
   const [filter, setFilter] = useState<CategoryFilter>("All");
   const [ranked, setRanked] = useState<HiringProject[]>([]);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<number>>(() => new Set());
+  const [projectImageSizes, setProjectImageSizes] = useState<Record<string, { width: number; height: number }>>({});
   const [submissionError, setSubmissionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [applicationId, setApplicationId] = useState("");
@@ -140,10 +141,23 @@ export default function CareersApplication({
   });
 
   const values = useWatch({ control });
-  const filteredProjects = useMemo(
-    () => projects.filter((project) => filter === "All" || project.category === filter),
-    [filter, projects]
-  );
+  const filteredProjects = useMemo(() => {
+    const filtered = projects.filter(
+      (project) => filter === "All" || project.category === filter
+    );
+    if (filter !== "All") return filtered;
+
+    const consulting = filtered.filter((project) => project.category === "Consulting");
+    const research = filtered.filter((project) => project.category === "Research");
+    const alternating: HiringProject[] = [];
+
+    for (let index = 0; index < Math.max(consulting.length, research.length); index += 1) {
+      if (consulting[index]) alternating.push(consulting[index]);
+      if (research[index]) alternating.push(research[index]);
+    }
+
+    return alternating;
+  }, [filter, projects]);
   const topChoice = ranked[0];
   const videoPrompt = topChoice ? getVideoPrompt(topChoice) : "Select your top project to reveal your prompt.";
 
@@ -333,16 +347,42 @@ export default function CareersApplication({
                         const canExpandDescription = description.length > 280;
                         const isDescriptionExpanded = expandedDescriptions.has(project.id);
                         const descriptionId = `project-description-${project.id}`;
+                        const imageSize = projectImageSizes[String(project.id)];
                         return (
                           <article className={`${styles.project} ${rank >= 0 ? styles.selectedProject : ""}`} key={project.id}>
                             {project.projectImageUrl && (
-                              <div className={styles.projectImage}>
+                              <div
+                                className={styles.projectImage}
+                                style={imageSize ? {
+                                  width: `min(${imageSize.width}px, 22rem, 100%)`,
+                                  aspectRatio: `${imageSize.width} / ${imageSize.height}`,
+                                } : undefined}
+                              >
                                 <Image
                                   src={project.projectImageUrl}
                                   alt={`${project.projectTitle} project photo`}
                                   fill
                                   sizes="(max-width: 640px) 100vw, 22rem"
                                   unoptimized
+                                  onLoad={(event) => {
+                                    const image = event.currentTarget;
+                                    if (!image.naturalWidth || !image.naturalHeight) return;
+                                    setProjectImageSizes((current) => {
+                                      const key = String(project.id);
+                                      const nextSize = {
+                                        width: image.naturalWidth,
+                                        height: image.naturalHeight,
+                                      };
+                                      const previousSize = current[key];
+                                      if (
+                                        previousSize?.width === nextSize.width &&
+                                        previousSize?.height === nextSize.height
+                                      ) {
+                                        return current;
+                                      }
+                                      return { ...current, [key]: nextSize };
+                                    });
+                                  }}
                                 />
                               </div>
                             )}

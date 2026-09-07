@@ -140,8 +140,8 @@
 .projectHeading span { color: var(--careers-gold); font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .projectHeading h3 { margin-top: .25rem; font-family: var(--font-kontrapunkt); font-size: clamp(1.35rem, 2.5vw, 1.8rem); line-height: 1.2; }
 .projectDescription { max-width: 70ch; margin-top: 1rem; }
-.projectDescription p { color: var(--careers-muted); font-size: 1rem; line-height: 1.55; }
-.descriptionPreview { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 4; }
+.projectDescription p { color: var(--careers-muted); font-size: 1rem; line-height: 1.55; white-space: pre-wrap; }
+.descriptionPreview { max-height: calc(1.55em * 4); overflow: hidden; }
 .readMoreButton { display: inline-flex; min-height: 2.25rem; align-items: center; margin-top: .45rem; padding: .45rem 0; border: 0; background: transparent; color: var(--careers-gold); font: inherit; font-size: .9rem; font-weight: 700; text-decoration: underline; text-underline-offset: .2rem; cursor: pointer; }
 .readMoreButton:hover { color: #ffd06e; }
 .selectButton { flex: 0 0 auto; padding: .75rem 1rem; border: 1px solid var(--careers-blue); border-radius: .5rem; background: transparent; color: var(--careers-text); cursor: pointer; transition: background .2s ease, transform .1s ease; }

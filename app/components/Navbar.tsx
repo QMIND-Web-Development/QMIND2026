@@ -158,14 +158,26 @@ function Navbar() {
               href="https://www.instagram.com/qmind.ai/"
               target="_blank"
             >
-              <Image src={INSTAGRAM} alt="Instagram" width={24} height={18} />
+              <Image
+                src={INSTAGRAM}
+                alt="Instagram"
+                width={24}
+                height={18}
+                style={{ width: "24px", height: "auto" }}
+              />
             </Link>
             <Link
               onClick={() => setNav(false)}
               href=" https://discord.gg/Hj6SMEZHBp"
               target="_blank"
             >
-              <Image src={DISCORD} alt="Discord" width={25} height={25} />
+              <Image
+                src={DISCORD}
+                alt="Discord"
+                width={25}
+                height={25}
+                style={{ width: "25px", height: "auto" }}
+              />
             </Link>
 
             {navLoading ? (
