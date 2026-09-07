@@ -57,7 +57,7 @@ function doPost(e) {
       safeCell(application.referralSource),
       safeCell(application.referralOther),
       application.socialConfirmed === true,
-      safeCell(JSON.stringify(application.demographicResponses || {})),
+      "", // Reserved legacy column; individual demographics are never exported.
       application.consent === true,
       safeCell(getResumeUrl(application)),
     ]);
@@ -81,6 +81,7 @@ function doPost(e) {
  * It creates and formats the reviewer-facing tabs from existing applications.
  */
 function setupWorkbook() {
+  removeLegacyDemographics();
   backfillResumeLinks();
   formatApplicationsSheet();
   rebuildReviewQueue();
@@ -226,7 +227,7 @@ function rebuildReviewQueue() {
         review[0], review[1], review[2], review[3],
       ];
     });
-    target.getRange(2, 1, output.length, output[0].length).setValues(output);
+    target.getRange(2, 1, output.length, output[0].length).setValues(output.map(function (row) { return row.map(safeCell); }));
   }
 
   formatReviewQueue(target);
@@ -279,7 +280,7 @@ function buildApplicantViewer() {
     ["Major", "I"], ["Top choice", "J"], ["Second choice", "K"],
     ["Third choice", "L"], ["LinkedIn", "N"], ["GitHub", "O"],
     ["Video", "P"], ["Why QMIND", "Q"], ["Skills and experience", "R"],
-    ["Fun fact", "S"], ["Referral source", "T"], ["Demographics", "W"],
+    ["Fun fact", "S"], ["Referral source", "T"],
   ];
 
   fields.forEach(function (field, index) {
@@ -299,7 +300,7 @@ function buildApplicantViewer() {
 function refreshProjectDemand() {
   const source = getApplicationsSheet();
   const target = getOrCreateSheet("Project Demand");
-  const counts = {};
+  const counts = Object.create(null);
 
   if (source.getLastRow() > 1) {
     source.getRange(2, 10, source.getLastRow() - 1, 3).getValues()
@@ -319,48 +320,28 @@ function refreshProjectDemand() {
 
   target.clear();
   target.appendRow(["Project", "First choice", "Second choice", "Third choice", "Total interest"]);
-  if (rows.length) target.getRange(2, 1, rows.length, 5).setValues(rows);
+  if (rows.length) target.getRange(2, 1, rows.length, 5).setValues(rows.map(function (row) { return row.map(safeCell); }));
   styleHeader(target, 5);
   target.setColumnWidth(1, 320);
   target.setColumnWidths(2, 4, 125);
 }
 
 function refreshDemographicSummary() {
-  const source = getApplicationsSheet();
-  const target = getOrCreateSheet("Demographic Summary");
-  const counts = {};
-
-  if (source.getLastRow() > 1) {
-    source.getRange(2, 23, source.getLastRow() - 1, 1).getValues()
-      .forEach(function (row) {
-        if (!row[0]) return;
-        try {
-          const responses = JSON.parse(row[0]);
-          Object.keys(responses).forEach(function (question) {
-            const answer = responses[question] || "Prefer not to answer";
-            const key = question + "||" + answer;
-            counts[key] = (counts[key] || 0) + 1;
-          });
-        } catch (error) {
-          // Preserve dashboard generation even if an older row has invalid JSON.
-        }
-      });
-  }
-
-  const rows = Object.keys(counts).map(function (key) {
-    const parts = key.split("||");
-    return [parts[0], parts[1], counts[key]];
-  }).sort(function (a, b) {
-    return a[0].localeCompare(b[0]) || b[2] - a[2];
-  });
-
+  const target = getSpreadsheet().getSheetByName("Demographic Summary");
+  if (!target) return;
   target.clear();
-  target.appendRow(["Question", "Response", "Applicants"]);
-  if (rows.length) target.getRange(2, 1, rows.length, 3).setValues(rows);
-  styleHeader(target, 3);
-  target.setColumnWidth(1, 260);
-  target.setColumnWidth(2, 220);
-  target.setColumnWidth(3, 110);
+  target.getRange("A1").setValue("Demographics are held separately from recruitment review data.");
+}
+
+/** Run setupWorkbook after deploying the updated server and Apps Script. */
+function removeLegacyDemographics() {
+  const source = getApplicationsSheet();
+  if (source.getLastRow() > 1) {
+    source.getRange(2, 23, source.getLastRow() - 1, 1).clearContent();
+  }
+  source.getRange(1, 23).setValue("Reserved");
+  // buildApplicantViewer also clears any old demographic lookup formulas.
+  refreshDemographicSummary();
 }
 
 function getApplicationsSheet() {
@@ -396,7 +377,7 @@ function getApplicationsSheet() {
       "Referral source",
       "Referral other",
       "Social channels confirmed",
-      "Demographic responses",
+      "Reserved",
       "Consent",
       "Resume",
     ]);
@@ -447,8 +428,9 @@ function backfillResumeLinks() {
 
 function safeCell(value) {
   if (value === null || value === undefined) return "";
+  if (typeof value === "number" || typeof value === "boolean") return value;
   const text = String(value);
-  return /^[=+\-@]/.test(text) ? "'" + text : text;
+  return /^[\s\u0000-\u001f]*[=+\-@]/.test(text) ? "'" + text : text;
 }
 
 function jsonResponse(value) {

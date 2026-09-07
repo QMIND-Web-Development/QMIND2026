@@ -17,9 +17,12 @@ export async function exportApplicationToSpreadsheet(
     return { status: "not_configured" as const };
   }
 
-  // Keep the private storage path inside the server application flow. The
-  // spreadsheet only needs the protected application link.
-  const { resumeStoragePath: _resumeStoragePath, ...spreadsheetApplication } = application;
+  // Individual demographics must never leave restricted database storage.
+  const {
+    resumeStoragePath: _resumeStoragePath,
+    demographicResponses: _demographicResponses,
+    ...spreadsheetApplication
+  } = application;
 
   const response = await fetch(webhookUrl, {
     method: "POST",

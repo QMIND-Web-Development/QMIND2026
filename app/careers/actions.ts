@@ -6,6 +6,9 @@ import { CAREERS_CONFIG } from "./config";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { exportApplicationToSpreadsheet } from "./spreadsheet";
 import type { ApplicationPayload } from "./types";
+import { demographicSchema } from "./validation";
+import { cookies } from "next/headers";
+import { validateEmailProof } from "./emailProof";
 
 const optionalUrl = z.union([z.literal(""), z.string().url()]).optional();
 const wordCount = (value: string) => value.trim().split(/\s+/).filter(Boolean).length;
@@ -30,7 +33,7 @@ const applicationSchema = z.object({
   referralSource: z.enum(["Social Media", "Word of Mouth", "Through Queen's", "Google", "Other"]),
   referralOther: z.string().trim().max(120).optional(),
   socialConfirmed: z.boolean().refine(Boolean, "Please confirm that you have followed QMIND on Instagram and joined the Discord."),
-  demographicResponses: z.record(z.string()),
+  demographicResponses: demographicSchema,
   consent: z.literal(true),
   rankedProjectIds: z.array(z.number().int()).length(3).refine((ids) => new Set(ids).size === 3),
   rankedProjectTitles: z.array(z.string()).length(3),
@@ -65,6 +68,10 @@ export async function submitApplication(formData: FormData): Promise<SubmitAppli
   }
 
   const payload = result.data as ApplicationPayload;
+  const proofs = [cookies().get("careers-verified-queens")?.value, cookies().get("careers-verified-preferred")?.value];
+  if (![payload.queensEmail, payload.preferredEmail].every((email) => proofs.some((proof) => validateEmailProof(proof, email)))) {
+    return { ok: false, message: "Verify both email addresses in Your information before submitting. Verification expires after one hour." };
+  }
   const extension = resume.name.split(".").pop()?.toLowerCase();
   const validExtension = extension === "pdf" || extension === "docx";
   const validMime = CAREERS_CONFIG.resumeTypes.includes(resume.type as never) || resume.type === "";
@@ -89,6 +96,11 @@ export async function submitApplication(formData: FormData): Promise<SubmitAppli
     return { ok: false, message: "One of your selected projects is no longer accepting applications." };
   }
 
+  // Titles displayed to reviewers must come from the validated project records.
+  payload.rankedProjectTitles = payload.rankedProjectIds.map((id) =>
+    projects.find((project) => project.id === id)!.projectTitle
+  );
+
   const applicationId = randomUUID();
   const safeEmail = payload.preferredEmail.toLowerCase().replace(/[^a-z0-9@._-]/g, "");
   const resumePath = `${applicationId}/${safeEmail}.${extension}`;
@@ -103,7 +115,7 @@ export async function submitApplication(formData: FormData): Promise<SubmitAppli
   }
 
   const submittedAt = new Date().toISOString();
-  const { error: insertError } = await supabase.from("applications").insert({
+  const { error: insertError } = await supabase.rpc("save_careers_application", { p_application: {
     id: applicationId,
     submitted_at: submittedAt,
     full_name: payload.fullName,
@@ -123,13 +135,12 @@ export async function submitApplication(formData: FormData): Promise<SubmitAppli
     referral_source: payload.referralSource,
     referral_other: payload.referralOther || null,
     social_confirmed: payload.socialConfirmed,
-    demographic_responses: payload.demographicResponses,
     consent: payload.consent,
     ranked_project_ids: payload.rankedProjectIds,
     ranked_project_titles: payload.rankedProjectTitles,
     resume_storage_path: resumePath,
     spreadsheet_status: "pending",
-  });
+  }, p_demographics: payload.demographicResponses });
 
   if (insertError) {
     await supabase.storage.from("application-resumes").remove([resumePath]);
