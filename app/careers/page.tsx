@@ -19,6 +19,7 @@ export default async function CareersPage() {
     .select("id, projectTitle, category, shortDescription, impactDescription, tags")
     .in("category", ["Consulting", "Research"])
     .eq("published", true)
+    .eq("is_hiring", true)
     .order("category")
     .order("projectTitle");
 

@@ -84,7 +84,8 @@ export async function submitApplication(formData: FormData): Promise<SubmitAppli
     .select("id, projectTitle, category")
     .in("id", payload.rankedProjectIds)
     .in("category", ["Consulting", "Research"])
-    .eq("published", true);
+    .eq("published", true)
+    .eq("is_hiring", true);
 
   if (!projects || projects.length !== 3) {
     return { ok: false, message: "One of your selected projects is no longer accepting applications." };
