@@ -10,7 +10,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function LoginForm() {
+export default function LoginForm({ redirectTo = "/" }: { redirectTo?: string }) {
   const [error, setError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("Invalid username or password")
   const [email, setEmail] = useState("");
@@ -35,7 +35,7 @@ export default function LoginForm() {
     }
 
     setLoading(false);
-    router.push("/");
+    router.push(redirectTo);
   };
 
   return (

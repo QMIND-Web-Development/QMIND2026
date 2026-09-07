@@ -117,7 +117,7 @@ function Navbar() {
           </button>
 
           {/* Nav Links */}
-          <div className="flex-col md:mt-[0] bg-transparent w-[100%] lg:flex-row flex items-center gap-[50px]">
+          <div className="flex-col md:mt-[0] bg-transparent w-[100%] lg:flex-row flex items-center gap-[50px] lg:gap-[20px] xl:gap-[32px] 2xl:gap-[50px]">
             <Link
               href="/"
               className={pathname == "/" ? styles.activePage : ""}
@@ -145,6 +145,13 @@ function Navbar() {
               onClick={() => setNav(false)}
             >
               PROJECTS
+            </Link>
+            <Link
+              href="/careers"
+              className={pathname == "/careers" ? styles.activePage : ""}
+              onClick={() => setNav(false)}
+            >
+              CAREERS
             </Link>
             <Link
               onClick={() => setNav(false)}
