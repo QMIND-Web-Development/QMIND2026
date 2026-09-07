@@ -16,8 +16,11 @@ const { createClient } = require('@supabase/supabase-js');
   }
   for (const table of ['applications', 'hiring_project_prompts']) {
     for (const [role, client] of Object.entries(clients)) {
-      const { count, error } = await client.from(table).select('*', { head: true, count: 'exact' });
-      console.log(JSON.stringify({ table, role, count, error: error ? { code: error.code, message: error.message } : null }));
+      const { count, error, status } = await client.from(table).select('*', { head: true, count: 'exact' });
+      console.log(JSON.stringify({ table, role, status, count, error: error ? { code: error.code, message: error.message } : null }));
+      // HEAD permission failures have no JSON error body; use the HTTP status.
+      const deniedApplicationRead = role === 'anon' && table === 'applications' && (error?.code === '42501' || status === 401 || status === 403);
+      if ((error && !deniedApplicationRead) || (role === 'anon' && table === 'applications' && count > 0)) process.exitCode = 1;
     }
   }
   const { data, error } = await clients.service_role.storage.getBucket('application-resumes');
@@ -25,4 +28,19 @@ const { createClient } = require('@supabase/supabase-js');
     id: data.id, public: data.public, file_size_limit: data.file_size_limit,
     allowed_mime_types: data.allowed_mime_types,
   } : null, error: error?.message }));
+  if (error || !data || data.public || Number(data.file_size_limit) !== 8388608) process.exitCode = 1;
+  if (clients.anon) {
+    const listing = await clients.anon.storage.from('application-resumes').list('', { limit: 1 });
+    console.log(JSON.stringify({ check: 'anonymous resume listing', returnedEntries: listing.data?.length ?? null, errorCode: listing.error?.statusCode ?? null }));
+    if (listing.data?.length || (listing.error && !['401', '403'].includes(String(listing.error.statusCode)))) process.exitCode = 1;
+  }
+  const response = await fetch(`${url}/rest/v1/`, { headers: {
+    apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+  } });
+  if (!response.ok) throw new Error('API schema unavailable');
+  const schema = await response.json();
+  const migrated = Boolean(schema.paths?.['/rpc/save_careers_application']) && !schema.definitions?.applications?.properties?.demographic_responses;
+  console.log(JSON.stringify({ check: 'demographic migration API schema', migrated }));
+  if (!migrated) process.exitCode = 1;
 })().catch(() => { console.error('Deployment check failed'); process.exitCode = 1; });

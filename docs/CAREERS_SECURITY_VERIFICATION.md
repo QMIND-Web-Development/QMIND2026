@@ -22,10 +22,11 @@ escaping during workbook rebuilds, and demographic exclusion from exports.
 
 ## Live checks on September 6, 2026
 
-Read-only checks against the locally configured Supabase project confirmed the
+Read-only checks against the configured QMIND Supabase project confirmed the
 resume bucket is private, limited to 8,388,608 bytes, and permits only PDF/DOCX
-MIME types. No applicant contents were retrieved, no live records were changed,
-and no emails were sent.
+MIME types. The migration was then applied through the Supabase Management API.
+No applicant contents were retrieved, no live records were changed outside the
+documented migration, and no emails were sent.
 
 The configured `NEXT_PUBLIC_SUPABASE_ANON_KEY` was an `sb_secret_...` key. Thus
 the initial count query labeled "anon" actually used privileged credentials;
@@ -38,16 +39,19 @@ A read-only scan found that exact key in seven existing local `.next/static`
 JavaScript bundles. Treat the key as exposed and rotate it. This confirms local
 bundling, not which bundles were deployed publicly.
 
-Replace that value with a publishable/anon key, rotate the exposed secret, and
-rebuild/redeploy. Anonymous live access and
-the deployed migration ledger remain unverified: a proper public key and/or
-authorized SQL connection are required. Repository migrations passing locally
-does not establish that they have been applied to the remote database.
+The local public variable now contains a publishable key. The PR preview does
+not contain the known secret. The Supabase account used here could not revoke
+the legacy secret key: the Management API returned HTTP 403 because the account
+lacks the required project permission. An owner or administrator must revoke
+that key in Supabase and update any production server variable that used it.
 
 ## Deployment remaining
 
 Follow [Security update rollout](CAREERS_IMPLEMENTATION.md#security-update-rollout).
-The new demographic migration has not been applied remotely. The Apps Script must be redeployed
+The demographic migration is applied remotely and verified: five applications
+and five private demographic records remain, the legacy public demographic
+column is gone, anonymous and authenticated roles have no application access,
+and the save RPC is service-role-only. The Apps Script must still be redeployed
 and its setup function run; clearing cells cannot erase old spreadsheet
 version history or copies, so existing reviewers should move to a fresh cleaned
 workbook if sensitive demographics were already present.

@@ -387,10 +387,11 @@ Reviewer access to the spreadsheet and Supabase project should be limited to aut
 ## Security update rollout
 
 1. Correct the public Supabase key before building. If a secret key was ever
-   bundled or deployed publicly, rotate it in Supabase and rebuild/redeploy.
+   bundled or deployed publicly, have a Supabase owner/admin revoke it and
+   rebuild/redeploy. The project key used in the PR preview is publishable.
 2. Pause application submissions for the migration/deploy window. Apply the
-   new migration and deploy the updated server together; the previous server
-   expects the demographic column that migration `202609060005` moves.
+   demographic migration and deploy the updated server together; the previous
+   server expects the demographic column that migration `202609060005` moves.
 3. Deploy the updated Apps Script and run `setupWorkbook()` to remove legacy
    demographic cells and viewer formulas. Existing Google Sheets version
    history, downloaded copies, and earlier exports are not erased by this

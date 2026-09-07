@@ -1,5 +1,9 @@
 begin;
 
+set local lock_timeout = '10s';
+-- Keep concurrent submissions from arriving between the copy and column move.
+lock table public.applications in access exclusive mode;
+
 create schema if not exists careers_private;
 revoke all on schema careers_private from public, anon, authenticated;
 grant usage on schema careers_private to service_role;
