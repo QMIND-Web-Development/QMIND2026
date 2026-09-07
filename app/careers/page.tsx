@@ -4,6 +4,13 @@ import CareersApplication from "./CareersApplication";
 import type { HiringProject } from "./types";
 import { getDrivePreviewUrl } from "./driveVideo";
 
+function normalizeHiringImagePath(path: string) {
+  return path.replace(
+    /^project_images\/hiring\/image_(\d+)(\.[^/]+)$/,
+    "project_images/hiring/image$1$2"
+  );
+}
+
 export const metadata: Metadata = {
   title: "Careers | QMIND",
   description:
@@ -16,7 +23,7 @@ export default async function CareersPage() {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("projects")
-    .select("id, projectTitle, category, shortDescription, impactDescription, tags, projectImages")
+    .select("id, projectTitle, category, shortDescription, impactDescription, fullDescription, tags, projectImages")
     .in("category", ["Consulting", "Research"])
     .eq("published", true)
     .eq("is_hiring", true)
@@ -26,7 +33,7 @@ export default async function CareersPage() {
   const projects = await Promise.all(
     ((data || []) as HiringProject[]).map(async (project) => {
       const imagePath = project.projectImages?.[0];
-      const image = imagePath ? await downloadImage(imagePath) : null;
+      const image = imagePath ? await downloadImage(normalizeHiringImagePath(imagePath)) : null;
 
       return {
         ...project,

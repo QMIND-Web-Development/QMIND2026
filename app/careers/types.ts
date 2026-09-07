@@ -4,6 +4,7 @@ export type HiringProject = {
   category: "Consulting" | "Research";
   shortDescription: string;
   impactDescription?: string | null;
+  fullDescription?: string | null;
   tags?: string[] | null;
   projectImages?: string[] | null;
   projectImageUrl?: string | null;

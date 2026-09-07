@@ -341,7 +341,7 @@ export default function CareersApplication({
                             {rank >= 0 ? `${["Top", "Second", "Third"][rank]} choice` : "Select project"}
                           </button>
                         </div>
-                        <p>{project.impactDescription || project.shortDescription}</p>
+                        <p>{project.fullDescription || project.shortDescription}</p>
                       </article>
                     );
                       })}
