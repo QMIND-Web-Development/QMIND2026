@@ -7,8 +7,6 @@ import { createAdminClient } from "@/utils/supabase/admin";
 import { exportApplicationToSpreadsheet } from "./spreadsheet";
 import type { ApplicationPayload } from "./types";
 import { demographicSchema } from "./validation";
-import { cookies } from "next/headers";
-import { validateEmailProof } from "./emailProof";
 
 const optionalUrl = z.union([z.literal(""), z.string().url()]).optional();
 const wordCount = (value: string) => value.trim().split(/\s+/).filter(Boolean).length;
@@ -68,10 +66,6 @@ export async function submitApplication(formData: FormData): Promise<SubmitAppli
   }
 
   const payload = result.data as ApplicationPayload;
-  const proofs = [cookies().get("careers-verified-queens")?.value, cookies().get("careers-verified-preferred")?.value];
-  if (![payload.queensEmail, payload.preferredEmail].every((email) => proofs.some((proof) => validateEmailProof(proof, email)))) {
-    return { ok: false, message: "Verify both email addresses in Your information before submitting. Verification expires after one hour." };
-  }
   const extension = resume.name.split(".").pop()?.toLowerCase();
   const validExtension = extension === "pdf" || extension === "docx";
   const validMime = CAREERS_CONFIG.resumeTypes.includes(resume.type as never) || resume.type === "";

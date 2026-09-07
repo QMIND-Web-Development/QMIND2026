@@ -18,7 +18,6 @@ The complete data flow is:
 ```text
 Careers form
     -> Next.js server action and Zod validation
-    -> Verify signed email proofs for both addresses
     -> Private resume upload to Supabase Storage
     -> Atomic application row and separately restricted demographic record
     -> Protected Apps Script webhook
@@ -124,13 +123,8 @@ The form collects:
 
 Queen's email addresses must end in `@queensu.ca`.
 
-Both addresses require an eight-digit email code before submission; identical
-addresses need only one verification. Codes expire in ten minutes, allow five
-attempts, and can be used once. Each address is limited to one send per minute
-and five per hour. A successful exchange sets an HTTP-only signed proof cookie
-valid for one hour, bound to the exact normalized email address. Changing the
-email requires verification again. Applicant verification does not create a
-Supabase Auth account or grant website editor access.
+Email ownership verification is intentionally not required. Applicants submit
+without an account; email format/domain checks do not establish identity.
 
 ### Resume restrictions
 
@@ -223,12 +217,6 @@ existing responses before removing the column from `public.applications`, in
 one transaction. The service-role-only `save_careers_application` RPC saves
 both records atomically. Only designated data administrators should have
 Supabase project/database or service-key access. Reviewers use the spreadsheet.
-
-Migration `202609060006` holds hashed email challenges in the same private
-schema. Its two RPCs are restricted to the service role. Raw codes are never
-stored in the database. The verification secret must be independent of the
-Supabase keys. Periodically delete expired challenge records older than a day
-from `careers_private.email_verifications` as part of maintenance.
 
 The `spreadsheet_status` field can contain:
 
@@ -324,9 +312,6 @@ NEXT_PUBLIC_SITE_URL=https://www.qmind.ca
 SUPABASE_SERVICE_ROLE_KEY=
 GOOGLE_SHEETS_WEBHOOK_URL=
 GOOGLE_SHEETS_WEBHOOK_SECRET=
-RESEND_API_KEY=
-CAREERS_EMAIL_FROM=QMIND <hiring@qmind.ca>
-CAREERS_VERIFICATION_SECRET=
 ```
 
 Rules:
@@ -336,9 +321,6 @@ Rules:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` must contain a publishable key (`sb_publishable_...`)
   or a legacy JWT with role `anon`. Never place an `sb_secret_...` key here.
   Next.js configuration rejects secret/service-role keys in this variable.
-- Configure a verified sender domain in Resend and set `CAREERS_EMAIL_FROM`.
-- Generate an independent cryptographically random verification secret of at
-  least 32 characters, for example `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
 - Use the Apps Script `/exec` URL, not `/dev`.
 - Restart the Next.js server after changing environment variables.
 
@@ -346,7 +328,7 @@ Rules:
 
 1. Copy `.env.example` to `.env.local`.
 2. Add Supabase URL, anonymous key, service-role key, and site URL.
-3. Apply all Supabase migrations in filename order, including the two security migrations.
+3. Apply all Supabase migrations in filename order, including the demographic security migration.
 4. Create the Google Sheet.
 5. Add `docs/google-sheets-webhook.gs` to its Apps Script project.
 6. Add `WEBHOOK_SECRET`, `SPREADSHEET_ID`, and `SITE_URL` Script Properties.
@@ -406,18 +388,17 @@ Reviewer access to the spreadsheet and Supabase project should be limited to aut
 
 1. Correct the public Supabase key before building. If a secret key was ever
    bundled or deployed publicly, rotate it in Supabase and rebuild/redeploy.
-2. Configure the Resend sender/API key and `CAREERS_VERIFICATION_SECRET`.
-3. Pause application submissions for the migration/deploy window. Apply the
-   new migrations and deploy the updated server together; the previous server
+2. Pause application submissions for the migration/deploy window. Apply the
+   new migration and deploy the updated server together; the previous server
    expects the demographic column that migration `202609060005` moves.
-4. Deploy the updated Apps Script and run `setupWorkbook()` to remove legacy
+3. Deploy the updated Apps Script and run `setupWorkbook()` to remove legacy
    demographic cells and viewer formulas. Existing Google Sheets version
    history, downloaded copies, and earlier exports are not erased by this
    script. For a workbook that already held individual demographics, create a
    fresh reviewer workbook containing only the cleaned review data, rebind the
    script to it, and restrict the original workbook to data administrators.
-5. Verify delivery and code entry with controlled test addresses, then reopen
-   submissions. No live emails are sent by the automated tests.
+4. Verify a controlled test submission, resume storage, reviewer export, and
+   deployed access policies before reopening submissions.
 
 Run `npm run test:careers-security` for isolated PostgreSQL migration/RLS tests
 and application/export security regression tests. Run

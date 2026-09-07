@@ -9,7 +9,6 @@ import { CAREERS_CONFIG, DEMOGRAPHIC_QUESTIONS, getVideoPrompt, REFERRAL_OPTIONS
 import { submitApplication } from "./actions";
 import type { HiringProject } from "./types";
 import styles from "./careers.module.scss";
-import EmailVerification from "./EmailVerification";
 
 const optionalUrl = z.union([z.literal(""), z.string().url("Enter a complete URL.")]);
 const words = (value = "") => value.trim().split(/\s+/).filter(Boolean).length;
@@ -364,16 +363,12 @@ export default function CareersApplication({
               <div className={styles.sectionIntro}>
                 <h2 id="information-heading">Your information</h2>
                 <p>Tell us how to contact you and where you are in your studies.</p>
-                <p>Verify both email addresses before submitting. If they are the same, one verification is enough. Verification lasts one hour.</p>
               </div>
               <div className={styles.fieldGrid}>
                 <Field label="Full name" error={errors.fullName?.message}><input {...register("fullName")} autoComplete="name" /></Field>
                 <Field label="Pronouns (optional)" error={errors.pronouns?.message}><input {...register("pronouns")} /></Field>
                 <Field label="Queen's email" error={errors.queensEmail?.message}><input {...register("queensEmail")} type="email" autoComplete="email" /></Field>
-                <EmailVerification key={`queens:${values.queensEmail}`} email={values.queensEmail || ""} purpose="queens" />
                 <Field label="Preferred email" error={errors.preferredEmail?.message}><input {...register("preferredEmail")} type="email" /></Field>
-                {values.preferredEmail?.trim().toLowerCase() !== values.queensEmail?.trim().toLowerCase() &&
-                  <EmailVerification key={`preferred:${values.preferredEmail}`} email={values.preferredEmail || ""} purpose="preferred" />}
                 <Field label="Graduation year" error={errors.graduationYear?.message}><input {...register("graduationYear")} inputMode="numeric" placeholder="2028" /></Field>
                 <Field label="Faculty" error={errors.faculty?.message}><input {...register("faculty")} /></Field>
                 <Field label="Major" error={errors.major?.message}><input {...register("major")} /></Field>

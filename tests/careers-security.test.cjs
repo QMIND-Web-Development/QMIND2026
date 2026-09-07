@@ -85,7 +85,7 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
         await db.exec('reset role');
       }
     }
-    assert.equal(migrations.length, 7);
+    assert.equal(migrations.length, 6);
     assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 10);
     await db.exec(fs.readFileSync('supabase/migrations/202609060004_seed_2026_hiring_projects.sql', 'utf8'));
     assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 10, 'seed rerun does not duplicate projects');
@@ -106,11 +106,8 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
       await db.exec(`set role ${role}`);
       await assert.rejects(db.query('select * from public.applications'), /permission denied/);
       await assert.rejects(db.query('select * from careers_private.application_demographics'), /permission denied/);
-      await assert.rejects(db.query('select * from careers_private.email_verifications'), /permission denied/);
       for (const sql of [
         "select public.save_careers_application('{}', '{}')",
-        `select public.request_careers_email_code('test@example.org', '${randomUUID()}', 'hash')`,
-        `select public.verify_careers_email_code('${randomUUID()}', 'hash')`,
       ]) await assert.rejects(db.query(sql), /permission denied/);
       const prompts = (await db.query('select project_id from public.hiring_project_prompts')).rows;
       assert.equal(prompts.length, 8);
@@ -132,25 +129,6 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
     await assert.rejects(db.query('select public.save_careers_application($1::jsonb, $2::jsonb)', [JSON.stringify(invalid), '[]']), /check constraint/);
     assert.equal((await db.query('select * from public.applications where id=$1', [invalid.id])).rows.length, 0, 'private failure rolls application back');
 
-    const request = (email, id, hash = 'correct') => db.query('select public.request_careers_email_code($1,$2,$3) as ok', [email, id, hash]);
-    const verify = (id, hash) => db.query('select public.verify_careers_email_code($1,$2) as email', [id, hash]);
-    const id = randomUUID();
-    assert.equal((await request('Test@Example.org', id)).rows[0].ok, true);
-    assert.equal((await request('test@example.org', randomUUID())).rows[0].ok, false, 'cooldown normalizes email');
-    for (let i = 0; i < 5; i++) assert.equal((await verify(id, 'wrong')).rows[0].email, null);
-    assert.equal((await verify(id, 'correct')).rows[0].email, null, 'attempt limit persists');
-    const successId = randomUUID();
-    await request('success@example.org', successId);
-    assert.equal((await verify(successId, 'correct')).rows[0].email, 'success@example.org');
-    assert.equal((await verify(successId, 'correct')).rows[0].email, null, 'cannot replay a code');
-    const expiredId = randomUUID();
-    await request('expired@example.org', expiredId);
-    await db.query("update careers_private.email_verifications set expires_at=now()-interval '1 minute' where challenge_id=$1", [expiredId]);
-    assert.equal((await verify(expiredId, 'correct')).rows[0].email, null);
-    for (let i = 1; i <= 5; i++) {
-      await db.exec("update careers_private.email_verifications set sent_at=now()-interval '61 seconds' where email='test@example.org'");
-      assert.equal((await request('test@example.org', randomUUID())).rows[0].ok, i < 5, 'hourly limit survives code replacement');
-    }
     await db.query('delete from public.applications where id=$1', [application.id]);
     assert.equal((await db.query('select * from careers_private.application_demographics where application_id=$1', [application.id])).rows.length, 0);
   } finally {
@@ -164,41 +142,6 @@ test('demographics reject unknown keys, formula payloads, and unexpected answers
   for (const input of [{ genderIdentity: '=Applications!E2' }, { '=Applications!E2': 'Yes' }, { firstGeneration: 'malicious' }]) {
     assert.equal(demographicSchema.safeParse(input).success, false);
   }
-});
-
-test('verification proofs reject email changes, expiry, tampering, and missing configuration', () => {
-  process.env.CAREERS_VERIFICATION_SECRET = 'test-only-secret-with-at-least-32-characters';
-  const { createEmailProof, validateEmailProof, hashEmailCode } = loadTs('app/careers/emailProof.ts');
-  const proof = createEmailProof(' Person@queensu.ca ', 1000);
-  assert.equal(validateEmailProof(proof, 'person@queensu.ca', 2000), true);
-  assert.equal(validateEmailProof(proof, 'someone-else@queensu.ca', 2000), false);
-  assert.equal(validateEmailProof(proof, 'person@queensu.ca', 3601000), false);
-  assert.equal(validateEmailProof(proof + '.extra', 'person@queensu.ca', 2000), false);
-  assert.equal(validateEmailProof('forged.' + proof.split('.')[1], 'person@queensu.ca', 2000), false);
-  assert.notEqual(hashEmailCode('challenge-a', '12345678'), hashEmailCode('challenge-b', '12345678'));
-  delete process.env.CAREERS_VERIFICATION_SECRET;
-  assert.equal(validateEmailProof(proof, 'person@queensu.ca', 2000), false);
-});
-
-test('unverified submissions are rejected before any database or storage access', async () => {
-  let calls = 0;
-  const { submitApplication } = loadTs('app/careers/actions.ts', {
-    'next/headers': { cookies: () => ({ get: () => undefined }) },
-    '@/utils/supabase/admin': { createAdminClient: () => { calls++; throw new Error('must not be called'); } },
-  });
-  const form = new FormData();
-  form.set('resume', new File(['%PDF-test'], 'resume.pdf', { type: 'application/pdf' }));
-  form.set('application', JSON.stringify({
-    fullName: 'Test Applicant', queensEmail: 'test@queensu.ca', preferredEmail: 'victim@example.org',
-    graduationYear: '2028', faculty: 'Engineering', major: 'Computing', videoUrl: 'https://example.org/video',
-    whyQmind: 'This is a sample application response.', skillsExperience: 'This is a sample experience response.',
-    funFact: 'A test fact', referralSource: 'Other', socialConfirmed: true, consent: true,
-    demographicResponses: {}, rankedProjectIds: [1,2,3], rankedProjectTitles: ['One','Two','Three'],
-  }));
-  const result = await submitApplication(form);
-  assert.equal(result.ok, false);
-  assert.match(result.message, /Verify both email/);
-  assert.equal(calls, 0);
 });
 
 test('reviewer export omits demographics and private storage paths', async () => {
@@ -219,57 +162,7 @@ test('reviewer export omits demographics and private storage paths', async () =>
   }
 });
 
-test('email code actions use browser-bound challenges and set HTTP-only signed proofs', async () => {
-  const originalFetch = global.fetch;
-  const previous = Object.fromEntries(['RESEND_API_KEY', 'CAREERS_EMAIL_FROM', 'CAREERS_VERIFICATION_SECRET'].map((key) => [key, process.env[key]]));
-  Object.assign(process.env, { RESEND_API_KEY: 'test', CAREERS_EMAIL_FROM: 'test@example.org', CAREERS_VERIFICATION_SECRET: 'test-only-secret-with-at-least-32-characters' });
-  const jar = new Map();
-  const options = new Map();
-  const rpcCalls = [];
-  let allowed = true;
-  let sent;
-  global.fetch = async (_url, request) => { sent = JSON.parse(request.body); return { ok: true }; };
-  const { requestEmailCode, verifyEmailCode } = loadTs('app/careers/verificationActions.ts', {
-    'next/headers': { cookies: () => ({ get: (key) => jar.has(key) ? { value: jar.get(key) } : undefined, set: (key, value, opts) => { jar.set(key, value); options.set(key, opts); } }) },
-    '@/utils/supabase/admin': { createAdminClient: () => ({ rpc: async (name, args) => {
-      rpcCalls.push({ name, args });
-      return { error: null, data: name === 'request_careers_email_code' ? allowed : 'test@queensu.ca' };
-    } }) },
-  });
-  try {
-    assert.equal((await requestEmailCode('test@example.org', 'queens')).ok, false);
-    assert.equal((await verifyEmailCode('12345678', 'queens')).ok, false, 'no exchange without browser challenge');
-    assert.equal(rpcCalls.length, 0);
-    assert.equal((await requestEmailCode('TEST@queensu.ca', 'queens')).ok, true);
-    assert.deepEqual(sent.to, ['test@queensu.ca']);
-    const code = sent.text.match(/code is (\d{8})/)[1];
-    assert.notEqual(rpcCalls[0].args.p_code_hash, code);
-    assert.equal(rpcCalls[0].args.p_code_hash.length, 64);
-    assert.equal(options.get('careers-challenge-queens').httpOnly, true);
-    assert.equal((await verifyEmailCode(code, 'queens')).ok, true);
-    assert.equal(rpcCalls[1].args.p_challenge_id, rpcCalls[0].args.p_challenge_id);
-    assert.equal(rpcCalls[1].args.p_code_hash, rpcCalls[0].args.p_code_hash);
-    const proof = jar.get('careers-verified-queens');
-    const { validateEmailProof } = loadTs('app/careers/emailProof.ts');
-    assert.equal(validateEmailProof(proof, 'test@queensu.ca'), true);
-    assert.equal(options.get('careers-verified-queens').httpOnly, true);
-    assert.equal(options.get('careers-verified-queens').sameSite, 'strict');
-    allowed = false;
-    sent = undefined;
-    assert.equal((await requestEmailCode('test@queensu.ca', 'queens')).ok, false);
-    assert.equal(sent, undefined, 'rate-limited requests do not send mail');
-  } finally {
-    global.fetch = originalFetch;
-    for (const [key, value] of Object.entries(previous)) {
-      if (value === undefined) delete process.env[key]; else process.env[key] = value;
-    }
-  }
-});
-
-test('verified submissions use canonical project titles and atomically save private demographics', async () => {
-  process.env.CAREERS_VERIFICATION_SECRET = 'test-only-secret-with-at-least-32-characters';
-  const { createEmailProof } = loadTs('app/careers/emailProof.ts');
-  const proofs = { 'careers-verified-queens': createEmailProof('test@queensu.ca'), 'careers-verified-preferred': createEmailProof('test@example.org') };
+test('public submissions use canonical project titles and atomically save private demographics', async () => {
   const writes = [];
   const projects = [1,2,3].map((id) => ({ id, projectTitle: `Canonical ${id}` }));
   const query = { select() { return this; }, in() { return this; }, eq: async () => ({ data: projects }) };
@@ -279,7 +172,6 @@ test('verified submissions use canonical project titles and atomically save priv
     rpc: async (_name, args) => { writes.push(args); return { error: null }; },
   };
   const { submitApplication } = loadTs('app/careers/actions.ts', {
-    'next/headers': { cookies: () => ({ get: (key) => proofs[key] ? { value: proofs[key] } : undefined }) },
     '@/utils/supabase/admin': { createAdminClient: () => admin },
   });
   const payload = {
@@ -292,21 +184,10 @@ test('verified submissions use canonical project titles and atomically save priv
   const form = new FormData();
   form.set('resume', new File(['%PDF-test'], 'resume.pdf', { type: 'application/pdf' }));
   form.set('application', JSON.stringify(payload));
-  try {
-    assert.equal((await submitApplication(form)).ok, true);
-    assert.deepEqual(writes[1].p_application.ranked_project_titles, ['Canonical 3','Canonical 1','Canonical 2']);
-    assert.equal(Object.hasOwn(writes[1].p_application, 'demographic_responses'), false);
-    assert.deepEqual(writes[1].p_demographics, { firstGeneration: 'Yes' });
-    writes.length = 0;
-    form.set('application', JSON.stringify({ ...payload, preferredEmail: 'victim@example.org' }));
-    assert.equal((await submitApplication(form)).ok, false);
-    assert.equal(writes.length, 0, 'changing a verified email requires another proof');
-    form.set('application', JSON.stringify({ ...payload, preferredEmail: 'test@queensu.ca' }));
-    delete proofs['careers-verified-preferred'];
-    assert.equal((await submitApplication(form)).ok, true, 'same address needs only one proof');
-  } finally {
-    delete process.env.CAREERS_VERIFICATION_SECRET;
-  }
+  assert.equal((await submitApplication(form)).ok, true);
+  assert.deepEqual(writes[1].p_application.ranked_project_titles, ['Canonical 3','Canonical 1','Canonical 2']);
+  assert.equal(Object.hasOwn(writes[1].p_application, 'demographic_responses'), false);
+  assert.deepEqual(writes[1].p_demographics, { firstGeneration: 'Yes' });
 });
 
 test('spreadsheet rebuilds escape formulas and cleanup removes old demographic cells', () => {
