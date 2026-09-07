@@ -85,7 +85,7 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
         await db.exec('reset role');
       }
     }
-    assert.equal(migrations.length, 8);
+    assert.equal(migrations.length, 9);
     assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 13);
     await db.exec(fs.readFileSync('supabase/migrations/202609060004_seed_2026_hiring_projects.sql', 'utf8'));
     assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 13, 'seed rerun does not duplicate projects');
