@@ -100,7 +100,6 @@ export default function CareersApplication({
   const [step, setStep] = useState(0);
   const [filter, setFilter] = useState<CategoryFilter>("All");
   const [ranked, setRanked] = useState<HiringProject[]>([]);
-  const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [submissionError, setSubmissionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [applicationId, setApplicationId] = useState("");
@@ -320,7 +319,6 @@ export default function CareersApplication({
                     <div className={styles.projectList}>
                       {filteredProjects.map((project) => {
                     const rank = ranked.findIndex((item) => item.id === project.id);
-                    const isExpanded = expanded.has(project.id);
                     return (
                       <article className={`${styles.project} ${rank >= 0 ? styles.selectedProject : ""}`} key={project.id}>
                         {project.projectImageUrl && (
@@ -343,22 +341,7 @@ export default function CareersApplication({
                             {rank >= 0 ? `${["Top", "Second", "Third"][rank]} choice` : "Select project"}
                           </button>
                         </div>
-                        <p>{project.shortDescription}</p>
-                        {isExpanded && project.impactDescription && <p className={styles.impact}>{project.impactDescription}</p>}
-                        {project.impactDescription && (
-                          <button
-                            type="button"
-                            className={styles.readMore}
-                            aria-expanded={isExpanded}
-                            onClick={() => setExpanded((current) => {
-                              const next = new Set(current);
-                              next.has(project.id) ? next.delete(project.id) : next.add(project.id);
-                              return next;
-                            })}
-                          >
-                            {isExpanded ? "Show less" : "Read more"}
-                          </button>
-                        )}
+                        <p>{project.impactDescription || project.shortDescription}</p>
                       </article>
                     );
                       })}
