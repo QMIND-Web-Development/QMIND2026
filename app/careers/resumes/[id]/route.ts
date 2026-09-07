@@ -25,13 +25,25 @@ export async function GET(_request: Request, { params }: { params: { id: string 
     return NOT_FOUND();
   }
 
-  const { data: signedUrl, error: signedUrlError } = await admin.storage
+  const { data: resume, error: resumeError } = await admin.storage
     .from("application-resumes")
-    .createSignedUrl(application.resume_storage_path, 60);
+    .download(application.resume_storage_path);
 
-  if (signedUrlError || !signedUrl?.signedUrl) {
+  if (resumeError || !resume) {
     return NOT_FOUND();
   }
 
-  return NextResponse.redirect(signedUrl.signedUrl);
+  const fileName = application.resume_storage_path.split("/").pop() || "resume";
+  const safeFileName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const contentType = safeFileName.toLowerCase().endsWith(".docx")
+    ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    : "application/pdf";
+
+  return new NextResponse(resume, {
+    headers: {
+      "Cache-Control": "private, no-store, max-age=0",
+      "Content-Disposition": `inline; filename="${safeFileName}"`,
+      "Content-Type": contentType,
+    },
+  });
 }
