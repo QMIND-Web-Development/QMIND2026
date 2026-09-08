@@ -2,7 +2,7 @@
 
 import { cloneElement, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch, type FieldErrors } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CAREERS_CONFIG, DEMOGRAPHIC_QUESTIONS, getVideoPrompt, REFERRAL_OPTIONS } from "./config";
@@ -207,6 +207,15 @@ export default function CareersApplication({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function onInvalid(validationErrors: FieldErrors<FormValues>) {
+    const invalidStep = fieldsByStep.findIndex((fields) =>
+      fields.some((field) => Boolean(validationErrors[field]))
+    );
+
+    setSubmissionError("Please review the highlighted fields and try again.");
+    setStep(invalidStep === -1 ? sections.length - 1 : invalidStep);
+  }
+
   async function onSubmit(data: FormValues) {
     if (ranked.length !== 3) {
       setStep(0);
@@ -287,7 +296,7 @@ export default function CareersApplication({
           <p className={styles.progressNote}>Your application cannot be edited after submission.</p>
         </aside>
 
-        <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form className={styles.form} onSubmit={handleSubmit(onSubmit, onInvalid)} noValidate>
           {step === 0 && (
             <section aria-labelledby="projects-heading">
               <div className={styles.sectionIntro}>
@@ -424,26 +433,24 @@ export default function CareersApplication({
             </section>
           )}
 
-          {step === 1 && (
-            <section aria-labelledby="information-heading">
-              <div className={styles.sectionIntro}>
-                <h2 id="information-heading">Your information</h2>
-                <p>Tell us how to contact you and where you are in your studies.</p>
-              </div>
-              <div className={styles.fieldGrid}>
-                <Field label="Full name" error={errors.fullName?.message}><input {...register("fullName")} autoComplete="name" /></Field>
-                <Field label="Pronouns (optional)" error={errors.pronouns?.message}><input {...register("pronouns")} /></Field>
-                <Field label="Queen's email" error={errors.queensEmail?.message}><input {...register("queensEmail")} type="email" autoComplete="email" /></Field>
-                <Field label="Preferred email" error={errors.preferredEmail?.message}><input {...register("preferredEmail")} type="email" /></Field>
-                <Field label="Graduation year" error={errors.graduationYear?.message}><input {...register("graduationYear")} inputMode="numeric" placeholder="2028" /></Field>
-                <Field label="Faculty" error={errors.faculty?.message}><input {...register("faculty")} /></Field>
-                <Field label="Major" error={errors.major?.message}><input {...register("major")} /></Field>
-                <Field label="Resume" error={errors.resume?.message as string} hint="PDF or DOCX, maximum 8 MB">
-                  <input {...register("resume")} type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
-                </Field>
-              </div>
-            </section>
-          )}
+          <section hidden={step !== 1} aria-labelledby="information-heading">
+            <div className={styles.sectionIntro}>
+              <h2 id="information-heading">Your information</h2>
+              <p>Tell us how to contact you and where you are in your studies.</p>
+            </div>
+            <div className={styles.fieldGrid}>
+              <Field label="Full name" error={errors.fullName?.message}><input {...register("fullName")} autoComplete="name" /></Field>
+              <Field label="Pronouns (optional)" error={errors.pronouns?.message}><input {...register("pronouns")} /></Field>
+              <Field label="Queen's email" error={errors.queensEmail?.message}><input {...register("queensEmail")} type="email" autoComplete="email" /></Field>
+              <Field label="Preferred email" error={errors.preferredEmail?.message}><input {...register("preferredEmail")} type="email" /></Field>
+              <Field label="Graduation year" error={errors.graduationYear?.message}><input {...register("graduationYear")} inputMode="numeric" placeholder="2028" /></Field>
+              <Field label="Faculty" error={errors.faculty?.message}><input {...register("faculty")} /></Field>
+              <Field label="Major" error={errors.major?.message}><input {...register("major")} /></Field>
+              <Field label="Resume" error={errors.resume?.message as string} hint="PDF or DOCX, maximum 8 MB">
+                <input {...register("resume")} type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+              </Field>
+            </div>
+          </section>
 
           {step === 2 && (
             <section aria-labelledby="questions-heading">

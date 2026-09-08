@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:careers-security": "node --test tests/careers-security.test.cjs"
+    "test:careers-security": "node --test tests/careers-security.test.cjs",
+    "test:careers-form": "node --test tests/careers-application.test.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
