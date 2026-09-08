@@ -86,12 +86,14 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
         await db.exec('reset role');
       }
     }
-    assert.equal(migrations.length, 9);
-    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 13);
+    assert.equal(migrations.length, 10);
+    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15);
     await db.exec(fs.readFileSync(path.join(migrationDirectory, '202609060004_seed_2026_hiring_projects.sql'), 'utf8'));
-    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 13, 'seed rerun does not duplicate projects');
+    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15, 'seed rerun does not duplicate projects');
     await db.exec(fs.readFileSync(path.join(migrationDirectory, '202609070002_seed_additional_hiring_projects.sql'), 'utf8'));
-    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 13, 'additional seed rerun does not duplicate projects');
+    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15, 'additional seed rerun does not duplicate projects');
+    await db.exec(fs.readFileSync(path.join(migrationDirectory, '202609080001_seed_final_hiring_projects.sql'), 'utf8'));
+    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15, 'final seed rerun does not duplicate projects');
     const existing = (await db.query('select "projectImages", "githubUrl", "pmEmail" from public.projects where id = 1')).rows[0];
     assert.deepEqual(existing, { projectImages: ['keep-image'], githubUrl: 'keep-repo', pmEmail: 'owner@example.org' });
     assert.deepEqual((await db.query('select responses from careers_private.application_demographics where application_id = $1', [legacy.id])).rows[0].responses, { genderIdentity: 'Woman' });
@@ -113,7 +115,7 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
         "select public.save_careers_application('{}', '{}')",
       ]) await assert.rejects(db.query(sql), /permission denied/);
       const prompts = (await db.query('select project_id from public.hiring_project_prompts')).rows;
-      assert.equal(prompts.length, 11);
+      assert.equal(prompts.length, 13);
       assert.ok(prompts.every((row) => ![1, 2].includes(Number(row.project_id))));
       assert.deepEqual((await db.query('select name from storage.objects')).rows, [{ name: 'public.png' }], 'restrictive policy defeats pre-existing broad access');
       await assert.rejects(db.query(`insert into storage.objects values ('${randomUUID()}', 'application-resumes', 'attack.pdf')`), /row-level security/);
