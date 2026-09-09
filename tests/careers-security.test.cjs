@@ -86,7 +86,7 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
         await db.exec('reset role');
       }
     }
-    assert.equal(migrations.length, 10);
+    assert.equal(migrations.length, 11);
     assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15);
     await db.exec(fs.readFileSync(path.join(migrationDirectory, '202609060004_seed_2026_hiring_projects.sql'), 'utf8'));
     assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15, 'seed rerun does not duplicate projects');
@@ -94,8 +94,27 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
     assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15, 'additional seed rerun does not duplicate projects');
     await db.exec(fs.readFileSync(path.join(migrationDirectory, '202609080001_seed_final_hiring_projects.sql'), 'utf8'));
     assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15, 'final seed rerun does not duplicate projects');
+    await db.exec(fs.readFileSync(path.join(migrationDirectory, '202609080002_update_wildfire_and_diffusion_projects.sql'), 'utf8'));
+    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15, 'project update rerun does not duplicate projects');
     const existing = (await db.query('select "projectImages", "githubUrl", "pmEmail" from public.projects where id = 1')).rows[0];
     assert.deepEqual(existing, { projectImages: ['keep-image'], githubUrl: 'keep-repo', pmEmail: 'owner@example.org' });
+    const wildfire = (await db.query('select "fullDescription", "projectManagers" from public.projects where "projectTitle" = $1', ['Wildfire Discovery Drone'])).rows[0];
+    assert.match(wildfire.fullDescription, /FLIR A700-series thermal camera/);
+    assert.deepEqual(wildfire.projectManagers, ['Viona Hashemkhani']);
+    const diffusion = (await db.query('select "fullDescription", "facultyAdvisor" from public.projects where "projectTitle" = $1', ['Diffusion-Model Rendering for Re-Themable Games'])).rows[0];
+    assert.match(diffusion.fullDescription, /densely factored dataset/);
+    assert.equal(diffusion.facultyAdvisor, 'Robert Ciborowsko');
+    const prompts = (await db.query(`
+      select p."projectTitle", h.prompt_text
+      from public.projects p
+      join public.hiring_project_prompts h on h.project_id = p.id
+      where p."projectTitle" in ('Wildfire Discovery Drone', 'Diffusion-Model Rendering for Re-Themable Games')
+      order by p."projectTitle"
+    `)).rows;
+    assert.deepEqual(prompts, [
+      { projectTitle: 'Diffusion-Model Rendering for Re-Themable Games', prompt_text: 'Tell me what your passion for AI comes from. What are your goals and why do you pursue them?' },
+      { projectTitle: 'Wildfire Discovery Drone', prompt_text: 'Tell me an interesting story about yourself.' },
+    ]);
     assert.deepEqual((await db.query('select responses from careers_private.application_demographics where application_id = $1', [legacy.id])).rows[0].responses, { genderIdentity: 'Woman' });
     assert.equal((await db.query("select count(*)::int as n from information_schema.columns where table_schema='public' and table_name='applications' and column_name='demographic_responses'")).rows[0].n, 0);
     const bucket = (await db.query("select * from storage.buckets where id='application-resumes'")).rows[0];
