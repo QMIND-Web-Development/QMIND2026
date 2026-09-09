@@ -467,7 +467,7 @@ export default function CareersApplication({
                 <textarea {...register("additionalProjects")} rows={3} />
               </Field>
               <div className={styles.prompt}>
-                <span>Application prompt for {topChoice?.projectTitle || "your top choice"}</span>
+                <span>Submit a 1 minute video response</span>
                 {topChoice?.promptVideoUrl && (
                   <PromptVideo key={`${topChoice.id}:${topChoice.promptVideoUrl}`} url={topChoice.promptVideoUrl} title={topChoice.projectTitle} />
                 )}
