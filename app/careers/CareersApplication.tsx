@@ -1,6 +1,6 @@
 "use client";
 
-import { cloneElement, useEffect, useMemo, useRef, useState } from "react";
+import { cloneElement, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
 import { useForm, useWatch, type FieldErrors } from "react-hook-form";
 import { z } from "zod";
@@ -8,59 +8,41 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CAREERS_CONFIG, DEMOGRAPHIC_QUESTIONS, getVideoPrompt, REFERRAL_OPTIONS } from "./config";
 import { submitApplication } from "./actions";
 import type { HiringProject } from "./types";
+import { applicationDetailsSchema, hasValidReferralOther } from "./validation";
 import styles from "./careers.module.scss";
 
-const optionalUrl = z.union([z.literal(""), z.string().url("Enter a complete URL.")]);
 const words = (value = "") => value.trim().split(/\s+/).filter(Boolean).length;
+const getResumeFile = (value: unknown): File | null => {
+  if (typeof File !== "undefined" && value instanceof File) return value;
+  if (typeof FileList !== "undefined" && value instanceof FileList) return value.item(0);
+  return null;
+};
 
-const formSchema = z
-  .object({
-    fullName: z.string().trim().min(2, "Enter your full name."),
-    pronouns: z.string().max(60),
-    queensEmail: z
-      .string()
-      .email("Enter a valid email.")
-      .refine((value) => value.toLowerCase().endsWith("@queensu.ca"), "Use your Queen's email."),
-    preferredEmail: z.string().email("Enter a valid email."),
-    graduationYear: z.string().regex(/^20\d{2}$/, "Enter a four-digit graduation year."),
-    faculty: z.string().trim().min(2, "Enter your faculty."),
-    major: z.string().trim().min(2, "Enter your major."),
-    resume: z
-      .any()
-      .refine((files) => files?.length === 1, "Upload your resume.")
-      .refine((files) => !files?.[0] || files[0].size <= CAREERS_CONFIG.resumeMaxBytes, "Resume must be 8 MB or less.")
-      .refine((files) => {
-        if (!files?.[0]) return true;
-        const extension = files[0].name.split(".").pop()?.toLowerCase();
-        return extension === "pdf" || extension === "docx";
-      }, "Upload a PDF or DOCX file."),
-    linkedIn: optionalUrl,
-    github: optionalUrl,
-    additionalProjects: z.string().max(500),
-    videoUrl: z.string().url("Enter a shareable video URL."),
-    whyQmind: z
-      .string()
-      .trim()
-      .min(20, "Tell us a little more.")
-      .refine((value) => words(value) <= 200, "Keep your response to 200 words."),
-    skillsExperience: z
-      .string()
-      .trim()
-      .min(20, "Tell us a little more.")
-      .refine((value) => words(value) <= 200, "Keep your response to 200 words."),
-    funFact: z.string().trim().min(2, "Share a fun fact."),
-    referralSource: z.string().min(1, "Choose an option."),
-    referralOther: z.string().max(120),
-    socialConfirmed: z.boolean().refine(Boolean, "Please confirm that you have followed QMIND on Instagram and joined the Discord."),
-    demographicResponses: z.record(z.string()),
-    consent: z.boolean().refine(Boolean, "Consent is required to submit."),
+const resumeSchema = z
+  .unknown()
+  .refine((value) => Boolean(getResumeFile(value)), "Upload your resume.")
+  .refine((value) => {
+    const file = getResumeFile(value);
+    return !file || file.size <= CAREERS_CONFIG.resumeMaxBytes;
+  }, "Resume must be 8 MB or less.")
+  .refine((value) => {
+    const file = getResumeFile(value);
+    if (!file) return true;
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    return extension === "pdf" || extension === "docx";
+  }, "Upload a PDF or DOCX file.");
+
+const formSchema = applicationDetailsSchema
+  .extend({
+    resume: resumeSchema,
   })
-  .refine((data) => data.referralSource !== "Other" || data.referralOther.trim().length > 0, {
+  .refine(hasValidReferralOther, {
     path: ["referralOther"],
     message: "Tell us how you heard about QMIND.",
   });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormInput = z.input<typeof formSchema>;
+type FormValues = z.output<typeof formSchema>;
 type CategoryFilter = "All" | "Consulting" | "Research";
 
 const sections = [
@@ -86,9 +68,15 @@ const fieldsByStep: Array<Array<keyof FormValues>> = [
     "referralOther",
     "socialConfirmed",
   ],
-  [],
+  ["demographicResponses"],
   ["consent"],
 ];
+
+function findInvalidStep(fieldNames: string[]) {
+  return fieldsByStep.findIndex((fields) =>
+    fields.some((field) => fieldNames.includes(String(field)))
+  );
+}
 
 export default function CareersApplication({
   projects,
@@ -102,6 +90,7 @@ export default function CareersApplication({
   const [ranked, setRanked] = useState<HiringProject[]>([]);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<number>>(() => new Set());
   const [projectImageSizes, setProjectImageSizes] = useState<Record<string, { width: number; height: number }>>({});
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [submissionError, setSubmissionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [applicationId, setApplicationId] = useState("");
@@ -112,9 +101,11 @@ export default function CareersApplication({
     control,
     trigger,
     handleSubmit,
+    setError,
     formState: { errors },
-  } = useForm<FormValues>({
+  } = useForm<FormInput, unknown, FormValues>({
     resolver: zodResolver(formSchema),
+    shouldUnregister: false,
     defaultValues: {
       fullName: "",
       pronouns: "",
@@ -139,6 +130,8 @@ export default function CareersApplication({
       consent: false,
     },
   });
+
+  const resumeRegistration = register("resume");
 
   const values = useWatch({ control });
   const filteredProjects = useMemo(() => {
@@ -208,12 +201,17 @@ export default function CareersApplication({
   }
 
   function onInvalid(validationErrors: FieldErrors<FormValues>) {
-    const invalidStep = fieldsByStep.findIndex((fields) =>
-      fields.some((field) => Boolean(validationErrors[field]))
-    );
+    const invalidStep = findInvalidStep(Object.keys(validationErrors));
 
-    setSubmissionError("Please review the highlighted fields and try again.");
     setStep(invalidStep === -1 ? sections.length - 1 : invalidStep);
+  }
+
+  function onFormSubmit(event: FormEvent<HTMLFormElement>) {
+    if (step !== sections.length - 1) {
+      event.preventDefault();
+      return;
+    }
+    void handleSubmit(onSubmit, onInvalid)(event);
   }
 
   async function onSubmit(data: FormValues) {
@@ -224,8 +222,16 @@ export default function CareersApplication({
     }
     setSubmitting(true);
     setSubmissionError("");
+    const resume = getResumeFile(data.resume) || resumeFile;
+    if (!resume) {
+      setError("resume", { type: "required", message: "Upload your resume." });
+      setStep(1);
+      setSubmissionError("Upload your resume before submitting.");
+      setSubmitting(false);
+      return;
+    }
     const body = new FormData();
-    body.set("resume", data.resume[0]);
+    body.set("resume", resume);
     body.set(
       "application",
       JSON.stringify({
@@ -238,6 +244,13 @@ export default function CareersApplication({
     const result = await submitApplication(body);
     setSubmitting(false);
     if (!result.ok) {
+      const serverFields = Object.entries(result.fieldErrors || {});
+      for (const [field, messages] of serverFields) {
+        const message = messages[0];
+        if (message) setError(field as keyof FormValues, { type: "server", message });
+      }
+      const invalidServerStep = findInvalidStep(serverFields.map(([field]) => field));
+      if (invalidServerStep !== -1) setStep(invalidServerStep);
       setSubmissionError(result.message);
       return;
     }
@@ -296,7 +309,7 @@ export default function CareersApplication({
           <p className={styles.progressNote}>Your application cannot be edited after submission.</p>
         </aside>
 
-        <form className={styles.form} onSubmit={handleSubmit(onSubmit, onInvalid)} noValidate>
+        <form className={styles.form} onSubmit={onFormSubmit} noValidate>
           {step === 0 && (
             <section aria-labelledby="projects-heading">
               <div className={styles.sectionIntro}>
@@ -446,14 +459,30 @@ export default function CareersApplication({
               <Field label="Graduation year" error={errors.graduationYear?.message}><input {...register("graduationYear")} inputMode="numeric" placeholder="2028" /></Field>
               <Field label="Faculty" error={errors.faculty?.message}><input {...register("faculty")} /></Field>
               <Field label="Major" error={errors.major?.message}><input {...register("major")} /></Field>
-              <Field label="Resume" error={errors.resume?.message as string} hint="PDF or DOCX, maximum 8 MB">
-                <input {...register("resume")} type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+              <Field
+                label="Resume"
+                error={errors.resume?.message as string}
+                hint={resumeFile ? `Selected: ${resumeFile.name}` : "PDF or DOCX, maximum 8 MB"}
+              >
+                <input
+                  {...resumeRegistration}
+                  type="file"
+                  accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  onChange={(event) => {
+                    const selectedFile = event.currentTarget.files?.[0] || null;
+                    setResumeFile(selectedFile);
+                    // Keep the native file selection visible while storing a File for validation.
+                    resumeRegistration.onChange({
+                      target: { name: resumeRegistration.name, value: selectedFile },
+                      type: "change",
+                    });
+                  }}
+                />
               </Field>
             </div>
           </section>
 
-          {step === 2 && (
-            <section aria-labelledby="questions-heading">
+          <section hidden={step !== 2} aria-labelledby="questions-heading">
               <div className={styles.sectionIntro}>
                 <h2 id="questions-heading">Application questions</h2>
                 <p>We value thoughtful, specific answers. Technical experience is not the only experience that matters.</p>
@@ -515,10 +544,8 @@ export default function CareersApplication({
                 <p id="social-confirmed-error" className={styles.errorText}>{errors.socialConfirmed.message}</p>
               )}
             </section>
-          )}
 
-          {step === 3 && (
-            <section aria-labelledby="demographics-heading">
+          <section hidden={step !== 3} aria-labelledby="demographics-heading">
               <div className={styles.sectionIntro}>
                 <h2 id="demographics-heading">Demographic survey</h2>
                 <p>
@@ -542,10 +569,8 @@ export default function CareersApplication({
                 ))}
               </div>
             </section>
-          )}
 
-          {step === 4 && (
-            <section aria-labelledby="review-heading">
+          <section hidden={step !== 4} aria-labelledby="review-heading">
               <div className={styles.sectionIntro}>
                 <h2 id="review-heading">Review and submit</h2>
                 <p>Check your choices carefully. You will not be able to edit your application after submitting.</p>
@@ -568,7 +593,6 @@ export default function CareersApplication({
               </label>
               {errors.consent?.message && <p className={styles.errorText}>{errors.consent.message}</p>}
             </section>
-          )}
 
           {submissionError && <div className={styles.formError} role="alert">{submissionError}</div>}
           {!(step === 0 && ranked.length === 3) && (
