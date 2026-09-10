@@ -187,7 +187,22 @@ test('reviewer export includes demographics and omits private storage paths', as
 });
 
 test('public submissions use canonical project titles and atomically save private demographics', async () => {
+  const originalFetch = global.fetch;
+  const originalWebhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+  const originalWebhookSecret = process.env.GOOGLE_SHEETS_WEBHOOK_SECRET;
+  const originalSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
   const writes = [];
+  let spreadsheetApplication;
+  let spreadsheetAttempts = 0;
+  process.env.GOOGLE_SHEETS_WEBHOOK_URL = 'https://example.org/test';
+  process.env.GOOGLE_SHEETS_WEBHOOK_SECRET = 'test';
+  process.env.NEXT_PUBLIC_SITE_URL = 'https://www.qmind.ca';
+  global.fetch = async (_url, options) => {
+    spreadsheetAttempts += 1;
+    if (spreadsheetAttempts === 1) throw new Error('temporary webhook failure');
+    spreadsheetApplication = JSON.parse(options.body).application;
+    return { ok: true, json: async () => ({ ok: true }) };
+  };
   const projects = [1,2,3].map((id) => ({ id, projectTitle: `Canonical ${id}` }));
   const query = {
     select() { return this; },
@@ -199,23 +214,37 @@ test('public submissions use canonical project titles and atomically save privat
     storage: { from: () => ({ upload: async () => { writes.push('upload'); return { error: null }; }, remove: async () => ({ error: null }) }) },
     rpc: async (_name, args) => { writes.push(args); return { error: null }; },
   };
-  const { submitApplication } = loadTs('app/careers/actions.ts', {
-    '@/utils/supabase/admin': { createAdminClient: () => admin },
-  });
-  const payload = {
-    fullName: 'Test Applicant', queensEmail: 'test@queensu.ca', preferredEmail: 'test@example.org',
-    graduationYear: '2028', faculty: 'Engineering', major: 'Computing', videoUrl: 'https://example.org/video',
-    whyQmind: 'This is a sample application response.', skillsExperience: 'This is a sample experience response.',
-    funFact: 'A test fact', referralSource: 'Other', socialConfirmed: true, consent: true,
-    demographicResponses: { firstGeneration: 'Yes' }, rankedProjectIds: [3,1,2], rankedProjectTitles: ['=attack','forged','fake'],
-  };
-  const form = new FormData();
-  form.set('resume', new File(['%PDF-test'], 'resume.pdf', { type: 'application/pdf' }));
-  form.set('application', JSON.stringify(payload));
-  assert.equal((await submitApplication(form)).ok, true);
-  assert.deepEqual(writes[1].p_application.ranked_project_titles, ['Canonical 3','Canonical 1','Canonical 2']);
-  assert.equal(Object.hasOwn(writes[1].p_application, 'demographic_responses'), false);
-  assert.deepEqual(writes[1].p_demographics, { firstGeneration: 'Yes' });
+  try {
+    const { submitApplication } = loadTs('app/careers/actions.ts', {
+      '@/utils/supabase/admin': { createAdminClient: () => admin },
+    });
+    const payload = {
+      fullName: 'Test Applicant', queensEmail: 'test@queensu.ca', preferredEmail: 'test@example.org',
+      graduationYear: '2028', faculty: 'Engineering', major: 'Computing', videoUrl: 'https://example.org/video',
+      whyQmind: 'This is a sample application response.', skillsExperience: 'This is a sample experience response.',
+      funFact: 'A test fact', referralSource: 'Other', referralOther: 'Test', socialConfirmed: true, consent: true,
+      demographicResponses: { firstGeneration: 'Yes' }, rankedProjectIds: [3,1,2], rankedProjectTitles: ['=attack','forged','fake'],
+    };
+    const form = new FormData();
+    form.set('resume', new File(['%PDF-test'], 'resume.pdf', { type: 'application/pdf' }));
+    form.set('application', JSON.stringify(payload));
+    const result = await submitApplication(form);
+    assert.equal(result.ok, true);
+    assert.equal(result.spreadsheetStatus, 'synced', 'a transient spreadsheet failure should be retried');
+    assert.equal(spreadsheetAttempts, 2);
+    assert.equal(spreadsheetApplication.resumeUrl.startsWith('https://www.qmind.ca/careers/resumes/'), true);
+    assert.deepEqual(writes[1].p_application.ranked_project_titles, ['Canonical 3','Canonical 1','Canonical 2']);
+    assert.equal(Object.hasOwn(writes[1].p_application, 'demographic_responses'), false);
+    assert.deepEqual(writes[1].p_demographics, { firstGeneration: 'Yes' });
+  } finally {
+    global.fetch = originalFetch;
+    if (originalWebhookUrl === undefined) delete process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+    else process.env.GOOGLE_SHEETS_WEBHOOK_URL = originalWebhookUrl;
+    if (originalWebhookSecret === undefined) delete process.env.GOOGLE_SHEETS_WEBHOOK_SECRET;
+    else process.env.GOOGLE_SHEETS_WEBHOOK_SECRET = originalWebhookSecret;
+    if (originalSiteUrl === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+    else process.env.NEXT_PUBLIC_SITE_URL = originalSiteUrl;
+  }
 });
 
 test('spreadsheet rebuilds escape formulas and restores demographic export cells', () => {
@@ -246,4 +275,70 @@ test('spreadsheet rebuilds escape formulas and restores demographic export cells
   assert.ok(clears.includes('summary'));
   assert.match(fs.readFileSync('docs/google-sheets-webhook.gs', 'utf8'), /safeCell\(JSON\.stringify\(application\.demographicResponses \|\| \{\}\)\)/);
   assert.match(fs.readFileSync('docs/google-sheets-webhook.gs', 'utf8'), /"Demographic responses"/);
+});
+
+test('webhook keeps a raw application sync successful when reviewer maintenance fails', () => {
+  const logs = [];
+  const context = vm.createContext({
+    console: { error: (...args) => logs.push(args.join(' ')) },
+    JSON,
+  });
+  vm.runInContext(fs.readFileSync('docs/google-sheets-webhook.gs', 'utf8'), context);
+
+  const rows = [];
+  let headerWrites = 0;
+  const sheet = {
+    getLastRow: () => rows.length ? rows.length + 1 : 1,
+    getRange(reference) {
+      if (reference === 'A:A') {
+        return {
+          createTextFinder: () => ({ matchEntireCell: () => ({ findNext: () => null }) }),
+        };
+      }
+      if (reference === 1) {
+        headerWrites += 1;
+        throw new Error('unexpected header write');
+      }
+      throw new Error(`unexpected range ${String(reference)}`);
+    },
+    appendRow: (row) => rows.push(row),
+  };
+
+  context.LockService = {
+    getScriptLock: () => ({ waitLock() {}, hasLock: () => true, releaseLock() {} }),
+  };
+  context.PropertiesService = {
+    getScriptProperties: () => ({
+      getProperty: (key) => ({ WEBHOOK_SECRET: 'test', SPREADSHEET_ID: 'sheet' }[key]),
+    }),
+  };
+  context.ContentService = {
+    MimeType: { JSON: 'application/json' },
+    createTextOutput: (text) => ({ text, setMimeType() { return this; } }),
+  };
+  context.getSpreadsheet = () => ({ getSheetByName: (name) => name === 'Applications' ? sheet : null });
+  context.setResumeLink = () => { throw new Error('protected resume link range'); };
+  context.appendReviewQueueRow = () => {};
+  context.refreshProjectDemand = () => {};
+  context.refreshDemographicSummary = () => {};
+
+  const response = context.doPost({
+    postData: {
+      contents: JSON.stringify({
+        webhookSecret: 'test',
+        application: {
+          applicationId: 'application-id', submittedAt: '2026-09-09T00:00:00.000Z',
+          fullName: 'Test Applicant', queensEmail: 'test@queensu.ca', preferredEmail: 'test@example.org',
+          graduationYear: '2028', faculty: 'Engineering', major: 'Computing',
+          rankedProjectTitles: ['One', 'Two', 'Three'], demographicResponses: {},
+          socialConfirmed: true, consent: true, resumeUrl: 'https://www.qmind.ca/careers/resumes/application-id',
+        },
+      }),
+    },
+  });
+
+  assert.deepEqual(JSON.parse(response.text), { ok: true });
+  assert.equal(rows.length, 1);
+  assert.equal(headerWrites, 0);
+  assert.match(logs.join('\n'), /resume link/);
 });

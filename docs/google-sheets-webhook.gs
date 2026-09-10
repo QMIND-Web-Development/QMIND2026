@@ -62,11 +62,20 @@ function doPost(e) {
       safeCell(getResumeUrl(application)),
     ]);
 
-    setResumeLink(sheet, sheet.getLastRow(), getResumeUrl(application));
-
-    appendReviewQueueRow(application);
-    refreshProjectDemand();
-    refreshDemographicSummary();
+    // The raw Applications row is the source-of-truth export. Keep optional
+    // reviewer maintenance from turning a successful raw sync into a retry.
+    runMaintenance("resume link", function () {
+      setResumeLink(sheet, sheet.getLastRow(), getResumeUrl(application));
+    });
+    runMaintenance("review queue", function () {
+      appendReviewQueueRow(application);
+    });
+    runMaintenance("project demand", function () {
+      refreshProjectDemand();
+    });
+    runMaintenance("demographic summary", function () {
+      refreshDemographicSummary();
+    });
 
     return jsonResponse({ ok: true });
   } catch (error) {
@@ -81,6 +90,7 @@ function doPost(e) {
  * It creates and formats the reviewer-facing tabs from existing applications.
  */
 function setupWorkbook() {
+  getApplicationsSheet().getRange(1, 23).setValue("Demographic responses");
   backfillResumeLinks();
   formatApplicationsSheet();
   rebuildReviewQueue();
@@ -372,10 +382,15 @@ function getApplicationsSheet() {
     sheet.setFrozenRows(1);
   }
 
-  // Upgrade workbooks created by the privacy migration without clearing data.
-  sheet.getRange(1, 23).setValue("Demographic responses");
-
   return sheet;
+}
+
+function runMaintenance(label, callback) {
+  try {
+    callback();
+  } catch (error) {
+    console.error("Careers spreadsheet maintenance failed (" + label + "): " + String(error));
+  }
 }
 
 function getResumeUrl(application) {

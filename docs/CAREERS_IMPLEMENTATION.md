@@ -260,6 +260,11 @@ The `Applications` worksheet contains the canonical export. The webhook:
 - Adds a clickable `Open resume` link for each applicant.
 - Appends one row for each new application.
 
+The webhook reports a successful export once the raw `Applications` row is
+written. Resume-link formatting and reviewer-view refreshes are best-effort;
+maintenance errors are logged in Apps Script executions without invalidating
+the raw application export.
+
 After updating the Apps Script, run `setupWorkbook()` once. It updates the
 legacy column W header and rebuilds the Applicant Viewer without demographic
 lookups. Column W contains the submitted demographic JSON for authorized

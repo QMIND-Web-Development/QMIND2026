@@ -6,35 +6,14 @@ import { CAREERS_CONFIG } from "./config";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { exportApplicationToSpreadsheet } from "./spreadsheet";
 import type { ApplicationPayload } from "./types";
-import { demographicSchema } from "./validation";
+import { applicationDetailsSchema, hasValidReferralOther } from "./validation";
 
-const optionalUrl = z.union([z.literal(""), z.string().url()]).optional();
-const wordCount = (value: string) => value.trim().split(/\s+/).filter(Boolean).length;
-
-const applicationSchema = z.object({
-  fullName: z.string().trim().min(2).max(120),
-  pronouns: z.string().trim().max(60).optional(),
-  queensEmail: z.string().email().refine((value) => value.toLowerCase().endsWith("@queensu.ca"), {
-    message: "Use your Queen's email address.",
-  }),
-  preferredEmail: z.string().email(),
-  graduationYear: z.string().regex(/^20\d{2}$/),
-  faculty: z.string().trim().min(2).max(100),
-  major: z.string().trim().min(2).max(100),
-  linkedIn: optionalUrl,
-  github: optionalUrl,
-  additionalProjects: z.string().trim().max(500).optional(),
-  videoUrl: z.string().url(),
-  whyQmind: z.string().trim().min(20).refine((value) => wordCount(value) <= 200),
-  skillsExperience: z.string().trim().min(20).refine((value) => wordCount(value) <= 200),
-  funFact: z.string().trim().min(2).max(500),
-  referralSource: z.enum(["Social Media", "Word of Mouth", "Through Queen's", "Google", "Other"]),
-  referralOther: z.string().trim().max(120).optional(),
-  socialConfirmed: z.boolean().refine(Boolean, "Please confirm that you have followed QMIND on Instagram and joined the Discord."),
-  demographicResponses: demographicSchema,
-  consent: z.literal(true),
+const applicationSchema = applicationDetailsSchema.extend({
   rankedProjectIds: z.array(z.number().int()).length(3).refine((ids) => new Set(ids).size === 3),
   rankedProjectTitles: z.array(z.string()).length(3),
+}).refine(hasValidReferralOther, {
+  path: ["referralOther"],
+  message: "Tell us how you heard about QMIND.",
 });
 
 export type SubmitApplicationResult =
@@ -149,17 +128,29 @@ export async function submitApplication(formData: FormData): Promise<SubmitAppli
   }
 
   let spreadsheetStatus = "not_configured";
-  try {
-    const spreadsheet = await exportApplicationToSpreadsheet({
-      ...payload,
-      applicationId,
-      submittedAt,
-      resumeStoragePath: resumePath,
-      resumeUrl: getResumeUrl(applicationId),
-    });
-    spreadsheetStatus = spreadsheet.status;
-  } catch {
+  let spreadsheetError: unknown;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const spreadsheet = await exportApplicationToSpreadsheet({
+        ...payload,
+        applicationId,
+        submittedAt,
+        resumeStoragePath: resumePath,
+        resumeUrl: getResumeUrl(applicationId),
+      });
+      spreadsheetStatus = spreadsheet.status;
+      spreadsheetError = undefined;
+      break;
+    } catch (error) {
+      spreadsheetError = error;
+    }
+  }
+  if (spreadsheetError) {
     spreadsheetStatus = "failed";
+    console.error(
+      "Careers spreadsheet export failed after retry:",
+      spreadsheetError instanceof Error ? spreadsheetError.message : "Unknown error"
+    );
   }
 
   await supabase
