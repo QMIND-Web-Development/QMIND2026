@@ -6,6 +6,7 @@ const vm = require('node:vm');
 const { randomUUID } = require('node:crypto');
 const ts = require('typescript');
 const { PGlite } = require('@electric-sql/pglite');
+const { buildSpreadsheetApplication, readFailedApplications, recoverFailedApplications } = require('../scripts/recover-careers-spreadsheet.cjs');
 
 function loadTs(relative, mocks = {}) {
   const filename = path.resolve(relative);
@@ -86,7 +87,7 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
         await db.exec('reset role');
       }
     }
-    assert.equal(migrations.length, 11);
+    assert.equal(migrations.length, 12);
     assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15);
     await db.exec(fs.readFileSync(path.join(migrationDirectory, '202609060004_seed_2026_hiring_projects.sql'), 'utf8'));
     assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15, 'seed rerun does not duplicate projects');
@@ -132,6 +133,7 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
       await assert.rejects(db.query('select * from careers_private.application_demographics'), /permission denied/);
       for (const sql of [
         "select public.save_careers_application('{}', '{}')",
+        "select * from public.get_failed_careers_applications()",
       ]) await assert.rejects(db.query(sql), /permission denied/);
       const prompts = (await db.query('select project_id from public.hiring_project_prompts')).rows;
       assert.equal(prompts.length, 13);
@@ -149,6 +151,11 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
     const application = sampleApplication();
     await db.query('select public.save_careers_application($1::jsonb, $2::jsonb)', [JSON.stringify(application), JSON.stringify({ firstGeneration: 'Yes' })]);
     assert.equal((await db.query('select * from public.applications where id=$1', [application.id])).rows.length, 1);
+    await db.query('update public.applications set spreadsheet_status=$1 where id=$2', ['failed', application.id]);
+    const recoveryRows = (await db.query('select public.get_failed_careers_applications() as application')).rows;
+    assert.equal(recoveryRows.length, 1);
+    assert.equal(recoveryRows[0].application.id, application.id);
+    assert.deepEqual(recoveryRows[0].application.demographic_responses, { firstGeneration: 'Yes' });
     const invalid = sampleApplication();
     await assert.rejects(db.query('select public.save_careers_application($1::jsonb, $2::jsonb)', [JSON.stringify(invalid), '[]']), /check constraint/);
     assert.equal((await db.query('select * from public.applications where id=$1', [invalid.id])).rows.length, 0, 'private failure rolls application back');
@@ -306,6 +313,7 @@ test('webhook keeps a raw application sync successful when reviewer maintenance 
 
   context.LockService = {
     getScriptLock: () => ({ waitLock() {}, hasLock: () => true, releaseLock() {} }),
+    getDocumentLock: () => ({ waitLock() {}, hasLock: () => true, releaseLock() {} }),
   };
   context.PropertiesService = {
     getScriptProperties: () => ({
@@ -341,4 +349,182 @@ test('webhook keeps a raw application sync successful when reviewer maintenance 
   assert.equal(rows.length, 1);
   assert.equal(headerWrites, 0);
   assert.match(logs.join('\n'), /resume link/);
+});
+
+test('recovery replays failed applications and updates only successful webhook calls', async () => {
+  const rows = [{
+    id: 'application-one', submitted_at: '2026-09-09T00:00:00.000Z', full_name: 'Test Applicant',
+    pronouns: null, queens_email: 'test@queensu.ca', preferred_email: 'test@example.org',
+    graduation_year: 2028, faculty: 'Engineering', major: 'Computing', linkedin_url: null,
+    github_url: null, additional_projects: null, video_url: 'https://example.org/video',
+    why_qmind: 'A sample application response.', skills_experience: 'A sample experience response.',
+    fun_fact: 'A test fact.', referral_source: 'Other', referral_other: 'Test',
+    social_confirmed: true, demographic_responses: { firstGeneration: 'Yes' }, consent: true,
+    ranked_project_titles: ['One', 'Two', 'Three'],
+  }, {
+    id: 'application-two', submitted_at: '2026-09-09T00:01:00.000Z', full_name: 'Second Applicant',
+    ranked_project_titles: ['Four', 'Five', 'Six'], demographic_responses: {},
+  }];
+  const sent = [];
+  const updates = [];
+  const errors = [];
+  let fetchCount = 0;
+  const supabase = {
+    rpc: async () => ({ data: rows, error: null }),
+    from: () => ({
+      update: () => ({
+        eq: (field, value) => {
+          assert.equal(field, 'id');
+          return {
+            eq: async (statusField, statusValue) => {
+              assert.equal(statusField, 'spreadsheet_status');
+              assert.equal(statusValue, 'failed');
+              updates.push(value);
+              return { error: null };
+            },
+          };
+        },
+      }),
+    }),
+  };
+  const fetchImpl = async (_url, options) => {
+    sent.push(JSON.parse(options.body).application);
+    fetchCount += 1;
+    return fetchCount === 1
+      ? { ok: true, status: 200, json: async () => ({ ok: true }) }
+      : { ok: false, status: 503, json: async () => ({ ok: false, error: 'Busy' }) };
+  };
+
+  const summary = await recoverFailedApplications({
+    supabase,
+    webhookUrl: 'https://example.org/webhook',
+    webhookSecret: 'test-secret',
+    siteUrl: 'https://www.qmind.ca',
+    fetchImpl,
+    sleepImpl: async () => {},
+    logError: (message) => errors.push(message),
+  });
+
+  assert.deepEqual(summary, { found: 2, synced: 1, failed: 1 });
+  assert.deepEqual(updates, ['application-one']);
+  assert.equal(errors.length, 1);
+  assert.equal(sent[0].applicationId, 'application-one');
+  assert.deepEqual(sent[0].demographicResponses, { firstGeneration: 'Yes' });
+  assert.equal(Object.hasOwn(sent[0], 'resumeStoragePath'), false);
+  assert.equal(Object.hasOwn(sent[0], 'resume_storage_path'), false);
+  assert.equal(sent[0].resumeUrl, 'https://www.qmind.ca/careers/resumes/application-one');
+  assert.equal(fetchCount, 3);
+  assert.deepEqual(buildSpreadsheetApplication(rows[0], 'https://www.qmind.ca').rankedProjectTitles, ['One', 'Two', 'Three']);
+});
+
+test('recovery reads every page before replaying failed applications', async () => {
+  const pages = [
+    Array.from({ length: 1000 }, (_, index) => ({ id: `application-${index}` })),
+    [{ id: 'application-1000' }],
+  ];
+  const ranges = [];
+  const rows = await readFailedApplications({
+    rpc: () => ({
+      range: async (from, to) => {
+        ranges.push([from, to]);
+        return { data: pages[ranges.length - 1], error: null };
+      },
+    }),
+  });
+
+  assert.equal(rows.length, 1001);
+  assert.deepEqual(ranges, [[0, 999], [1000, 1999]]);
+});
+
+test('webhook releases the submission lock before slow reviewer maintenance', () => {
+  const context = vm.createContext({
+    console: { error() {} },
+    JSON,
+  });
+  vm.runInContext(fs.readFileSync('docs/google-sheets-webhook.gs', 'utf8'), context);
+
+  const rows = [];
+  const sheet = {
+    getLastRow: () => rows.length + 1,
+    getRange(reference) {
+      assert.equal(reference, 'A:A');
+      return {
+        createTextFinder: () => ({ matchEntireCell: () => ({ findNext: () => null }) }),
+      };
+    },
+    appendRow: (row) => rows.push(row),
+  };
+  let lockHeld = false;
+  context.LockService = {
+    getScriptLock: () => {
+      let acquired = false;
+      return {
+        waitLock() {
+          if (lockHeld) throw new Error('lock timeout');
+          lockHeld = true;
+          acquired = true;
+        },
+        hasLock: () => acquired,
+        releaseLock() {
+          if (acquired) {
+            lockHeld = false;
+            acquired = false;
+          }
+        },
+      };
+    },
+    getDocumentLock: () => ({
+      waitLock() {},
+      hasLock: () => true,
+      releaseLock() {},
+    }),
+  };
+  context.PropertiesService = {
+    getScriptProperties: () => ({
+      getProperty: (key) => ({ WEBHOOK_SECRET: 'test', SPREADSHEET_ID: 'sheet' }[key]),
+    }),
+  };
+  context.ContentService = {
+    MimeType: { JSON: 'application/json' },
+    createTextOutput: (text) => ({ text, setMimeType() { return this; } }),
+  };
+  context.getSpreadsheet = () => ({ getSheetByName: () => sheet });
+  context.setResumeLink = () => {};
+  context.appendReviewQueueRow = () => {};
+  context.refreshDemographicSummary = () => {};
+
+  let nestedResponse;
+  let maintenanceRuns = 0;
+  const nestedRequest = {
+    postData: {
+      contents: JSON.stringify({
+        webhookSecret: 'test',
+        application: {
+          applicationId: 'nested-application-id', submittedAt: '2026-09-09T00:01:00.000Z',
+          rankedProjectTitles: ['One', 'Two', 'Three'],
+          resumeUrl: 'https://www.qmind.ca/careers/resumes/nested-application-id',
+        },
+      }),
+    },
+  };
+  context.refreshProjectDemand = () => {
+    if (maintenanceRuns++ === 0) nestedResponse = context.doPost(nestedRequest);
+  };
+
+  const response = context.doPost({
+    postData: {
+      contents: JSON.stringify({
+        webhookSecret: 'test',
+        application: {
+          applicationId: 'application-id', submittedAt: '2026-09-09T00:00:00.000Z',
+          rankedProjectTitles: ['One', 'Two', 'Three'],
+          resumeUrl: 'https://www.qmind.ca/careers/resumes/application-id',
+        },
+      }),
+    },
+  });
+
+  assert.deepEqual(JSON.parse(response.text), { ok: true });
+  assert.deepEqual(JSON.parse(nestedResponse.text), { ok: true });
+  assert.equal(rows.length, 2);
 });

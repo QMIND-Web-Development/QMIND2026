@@ -371,6 +371,12 @@ Saving code in the editor does not update the production webhook by itself. Crea
 4. Confirm Script Properties match `.env.local`.
 5. Check Apps Script Executions for errors.
 6. Confirm `SPREADSHEET_ID` points to the intended workbook.
+7. After deploying the webhook fix and applying the recovery migration, run
+   `node scripts/recover-careers-spreadsheet.cjs` from a trusted server or
+   administrator workstation. The server-only command
+   replays every failed application through the webhook and changes its
+   `spreadsheet_status` to `synced` only after the webhook accepts it. It is
+   safe to rerun because the webhook de-duplicates application IDs.
 
 Supabase remains the source of truth if spreadsheet export fails. A failed record can be replayed without creating another database application, and Apps Script prevents duplicate spreadsheet rows using the application UUID.
 
