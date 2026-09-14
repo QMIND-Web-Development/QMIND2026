@@ -5,6 +5,7 @@ import { z } from "zod";
 import { CAREERS_CONFIG } from "./config";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { exportApplicationToSpreadsheet } from "./spreadsheet";
+import { notifySpreadsheetSyncFailure } from "./adminAlerts";
 import type { ApplicationPayload } from "./types";
 import { applicationDetailsSchema, hasValidReferralOther } from "./validation";
 
@@ -17,8 +18,10 @@ const applicationSchema = applicationDetailsSchema.extend({
 });
 
 export type SubmitApplicationResult =
-  | { ok: true; applicationId: string; spreadsheetStatus: string }
+  | { ok: true; applicationId: string }
   | { ok: false; message: string; fieldErrors?: Record<string, string[]> };
+
+type SpreadsheetStatus = "synced" | "failed" | "not_configured";
 
 export async function submitApplication(formData: FormData): Promise<SubmitApplicationResult> {
   const rawPayload = formData.get("application");
@@ -127,9 +130,11 @@ export async function submitApplication(formData: FormData): Promise<SubmitAppli
     };
   }
 
-  let spreadsheetStatus = "not_configured";
+  let spreadsheetStatus: SpreadsheetStatus = "not_configured";
   let spreadsheetError: unknown;
+  let spreadsheetAttempts = 0;
   for (let attempt = 0; attempt < 2; attempt += 1) {
+    spreadsheetAttempts = attempt + 1;
     try {
       const spreadsheet = await exportApplicationToSpreadsheet({
         ...payload,
@@ -153,12 +158,45 @@ export async function submitApplication(formData: FormData): Promise<SubmitAppli
     );
   }
 
-  await supabase
-    .from("applications")
-    .update({ spreadsheet_status: spreadsheetStatus })
-    .eq("id", applicationId);
+  let statusUpdateError: unknown;
+  try {
+    const { error } = await supabase
+      .from("applications")
+      .update({ spreadsheet_status: spreadsheetStatus })
+      .eq("id", applicationId);
+    statusUpdateError = error || undefined;
+  } catch (error) {
+    statusUpdateError = error;
+  }
 
-  return { ok: true, applicationId, spreadsheetStatus };
+  if (statusUpdateError) {
+    console.error(
+      "Careers spreadsheet status update failed:",
+      statusUpdateError instanceof Error ? statusUpdateError.message : "Unknown error"
+    );
+  }
+
+  const alertStatus: "failed" | "not_configured" | "status_update_failed" | undefined =
+    statusUpdateError && spreadsheetStatus === "synced"
+      ? "status_update_failed"
+      : spreadsheetStatus !== "synced"
+        ? spreadsheetStatus
+        : undefined;
+
+  if (alertStatus) {
+    try {
+      await notifySpreadsheetSyncFailure({
+        applicationId,
+        attempts: spreadsheetAttempts,
+        status: alertStatus,
+        error: statusUpdateError || spreadsheetError,
+      });
+    } catch {
+      console.error("Careers spreadsheet admin alert failed");
+    }
+  }
+
+  return { ok: true, applicationId };
 }
 
 function getResumeUrl(applicationId: string) {

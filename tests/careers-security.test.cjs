@@ -237,7 +237,7 @@ test('public submissions use canonical project titles and atomically save privat
     form.set('application', JSON.stringify(payload));
     const result = await submitApplication(form);
     assert.equal(result.ok, true);
-    assert.equal(result.spreadsheetStatus, 'synced', 'a transient spreadsheet failure should be retried');
+    assert.equal(Object.hasOwn(result, 'spreadsheetStatus'), false, 'spreadsheet state is server-only');
     assert.equal(spreadsheetAttempts, 2);
     assert.equal(spreadsheetApplication.resumeUrl.startsWith('https://www.qmind.ca/careers/resumes/'), true);
     assert.deepEqual(writes[1].p_application.ranked_project_titles, ['Canonical 3','Canonical 1','Canonical 2']);
@@ -249,6 +249,93 @@ test('public submissions use canonical project titles and atomically save privat
     else process.env.GOOGLE_SHEETS_WEBHOOK_URL = originalWebhookUrl;
     if (originalWebhookSecret === undefined) delete process.env.GOOGLE_SHEETS_WEBHOOK_SECRET;
     else process.env.GOOGLE_SHEETS_WEBHOOK_SECRET = originalWebhookSecret;
+    if (originalSiteUrl === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+    else process.env.NEXT_PUBLIC_SITE_URL = originalSiteUrl;
+  }
+});
+
+test('saved applications succeed for applicants and alert admins when spreadsheet sync fails', async () => {
+  const originalFetch = global.fetch;
+  const originalWebhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+  const originalWebhookSecret = process.env.GOOGLE_SHEETS_WEBHOOK_SECRET;
+  const originalDiscordUrl = process.env.DISCORD_CAREERS_ALERT_WEBHOOK_URL;
+  const originalSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  const savedStatuses = [];
+  const requests = [];
+  const stored = sampleApplication('application-alert');
+  const payload = {
+    fullName: stored.full_name,
+    queensEmail: stored.queens_email,
+    preferredEmail: stored.preferred_email,
+    graduationYear: String(stored.graduation_year),
+    faculty: stored.faculty,
+    major: stored.major,
+    videoUrl: stored.video_url,
+    whyQmind: stored.why_qmind,
+    skillsExperience: stored.skills_experience,
+    funFact: stored.fun_fact,
+    referralSource: stored.referral_source,
+    referralOther: 'Test',
+    socialConfirmed: stored.social_confirmed,
+    consent: stored.consent,
+    demographicResponses: { firstGeneration: 'Yes' },
+    rankedProjectIds: [1, 2, 3],
+    rankedProjectTitles: ['One', 'Two', 'Three'],
+  };
+  const projects = [1, 2, 3].map((id) => ({ id, projectTitle: `Canonical ${id}` }));
+  const query = {
+    select() { return this; },
+    in() { return this; },
+    eq(field) { return field === 'is_hiring' ? Promise.resolve({ data: projects }) : this; },
+  };
+  const admin = {
+    from: () => ({
+      ...query,
+      update: (values) => {
+        savedStatuses.push(values);
+        return { eq: async () => ({ error: null }) };
+      },
+    }),
+    storage: { from: () => ({ upload: async () => ({ error: null }), remove: async () => ({ error: null }) }) },
+    rpc: async () => ({ error: null }),
+  };
+
+  process.env.GOOGLE_SHEETS_WEBHOOK_URL = 'https://example.org/sheets';
+  process.env.GOOGLE_SHEETS_WEBHOOK_SECRET = 'test';
+  process.env.DISCORD_CAREERS_ALERT_WEBHOOK_URL = 'https://example.org/discord';
+  process.env.NEXT_PUBLIC_SITE_URL = 'https://www.qmind.ca';
+  global.fetch = async (url, options) => {
+    requests.push({ url, body: JSON.parse(options.body) });
+    return url === 'https://example.org/sheets'
+      ? { ok: false, status: 503, json: async () => ({ ok: false }) }
+      : { ok: true, status: 204 };
+  };
+
+  try {
+    const { submitApplication } = loadTs('app/careers/actions.ts', {
+      '@/utils/supabase/admin': { createAdminClient: () => admin },
+    });
+    const form = new FormData();
+    form.set('resume', new File(['%PDF-test'], 'resume.pdf', { type: 'application/pdf' }));
+    form.set('application', JSON.stringify(payload));
+
+    const result = await submitApplication(form);
+    assert.equal(result.ok, true);
+    assert.equal(Object.hasOwn(result, 'spreadsheetStatus'), false);
+    assert.deepEqual(savedStatuses, [{ spreadsheet_status: 'failed' }]);
+    assert.equal(requests.length, 3, 'two spreadsheet attempts plus one Discord alert');
+    assert.equal(requests[2].url, 'https://example.org/discord');
+    assert.match(requests[2].body.content, /Application ID:/);
+    assert.match(requests[2].body.content, /Attempts: 2/);
+    assert.doesNotMatch(requests[2].body.content, /Test Applicant|@example\.org/);
+  } finally {
+    global.fetch = originalFetch;
+    if (originalWebhookUrl === undefined) delete process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+    else process.env.GOOGLE_SHEETS_WEBHOOK_URL = originalWebhookUrl;
+    if (originalWebhookSecret === undefined) delete process.env.GOOGLE_SHEETS_WEBHOOK_SECRET;
+    else process.env.GOOGLE_SHEETS_WEBHOOK_SECRET = originalWebhookSecret;
+    if (originalDiscordUrl === undefined) delete process.env.DISCORD_CAREERS_ALERT_WEBHOOK_URL;
+    else process.env.DISCORD_CAREERS_ALERT_WEBHOOK_URL = originalDiscordUrl;
     if (originalSiteUrl === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
     else process.env.NEXT_PUBLIC_SITE_URL = originalSiteUrl;
   }
