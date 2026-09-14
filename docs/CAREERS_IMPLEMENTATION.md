@@ -316,6 +316,7 @@ NEXT_PUBLIC_SITE_URL=https://www.qmind.ca
 SUPABASE_SERVICE_ROLE_KEY=
 GOOGLE_SHEETS_WEBHOOK_URL=
 GOOGLE_SHEETS_WEBHOOK_SECRET=
+DISCORD_CAREERS_ALERT_WEBHOOK_URL=
 ```
 
 Rules:
@@ -326,6 +327,9 @@ Rules:
   or a legacy JWT with role `anon`. Never place an `sb_secret_...` key here.
   Next.js configuration rejects secret/service-role keys in this variable.
 - Use the Apps Script `/exec` URL, not `/dev`.
+- `DISCORD_CAREERS_ALERT_WEBHOOK_URL` is server-only. It should point to an
+  incoming webhook in a private admin Discord channel and must never be added
+  to a `NEXT_PUBLIC_` variable.
 - Restart the Next.js server after changing environment variables.
 
 ## Initial setup checklist
@@ -363,6 +367,15 @@ Video prompts are generated in `app/careers/config.ts` from each listing's title
 
 Saving code in the editor does not update the production webhook by itself. Create a new web-app deployment version after every production change.
 
+### Discord admin alerts
+
+Create a private channel in the QMIND Discord server, open Channel Settings →
+Integrations → Webhooks, and create an incoming webhook. Put its URL in the
+server-only `DISCORD_CAREERS_ALERT_WEBHOOK_URL` environment variable. The URL
+is a credential: do not commit it, expose it to the browser, or include it in
+logs. The careers submission action posts only the application ID, retry count,
+safe failure category, and recovery command to this channel.
+
 ### Failed spreadsheet exports
 
 1. Check `applications.spreadsheet_status`.
@@ -371,6 +384,21 @@ Saving code in the editor does not update the production webhook by itself. Crea
 4. Confirm Script Properties match `.env.local`.
 5. Check Apps Script Executions for errors.
 6. Confirm `SPREADSHEET_ID` points to the intended workbook.
+7. After deploying the webhook fix and applying the recovery migration, run
+   `node scripts/recover-careers-spreadsheet.cjs` from a trusted server or
+   administrator workstation. The server-only command
+   replays every failed application through the webhook and changes its
+   `spreadsheet_status` to `synced` only after the webhook accepts it. It is
+   safe to rerun because the webhook de-duplicates application IDs.
+   If Supabase reports that `get_failed_careers_applications` is missing, apply
+   `supabase/migrations/careers/202609140001_failed_application_recovery.sql`
+   in the SQL Editor, run `NOTIFY pgrst, 'reload schema';`, and retry.
+
+When `DISCORD_CAREERS_ALERT_WEBHOOK_URL` is configured, a failed export also
+posts an admin-only alert containing the application ID, attempt count, safe
+failure category, and recovery command. Applicant details and webhook secrets
+are not included. A Discord alert failure is logged server-side and does not
+change the successful applicant response.
 
 Supabase remains the source of truth if spreadsheet export fails. A failed record can be replayed without creating another database application, and Apps Script prevents duplicate spreadsheet rows using the application UUID.
 

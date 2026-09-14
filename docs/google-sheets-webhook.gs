@@ -6,6 +6,10 @@
  */
 function doPost(e) {
   const lock = LockService.getScriptLock();
+  let sheet;
+  let applicationRow;
+  let duplicate = false;
+  let application;
 
   try {
     const request = JSON.parse(e.postData.contents);
@@ -16,14 +20,14 @@ function doPost(e) {
       return jsonResponse({ ok: false, error: "Unauthorized" });
     }
 
-    const application = request.application;
+    application = request.application;
     if (!application || !application.applicationId) {
       return jsonResponse({ ok: false, error: "Invalid application" });
     }
 
     lock.waitLock(10000);
 
-    const sheet = getApplicationsSheet();
+    sheet = getApplicationsSheet();
     const existing = sheet
       .getRange("A:A")
       .createTextFinder(application.applicationId)
@@ -31,58 +35,65 @@ function doPost(e) {
       .findNext();
 
     if (existing) {
-      return jsonResponse({ ok: true, duplicate: true });
+      duplicate = true;
     }
 
-    sheet.appendRow([
-      safeCell(application.applicationId),
-      safeCell(application.submittedAt),
-      safeCell(application.fullName),
-      safeCell(application.pronouns),
-      safeCell(application.queensEmail),
-      safeCell(application.preferredEmail),
-      safeCell(application.graduationYear),
-      safeCell(application.faculty),
-      safeCell(application.major),
-      safeCell(application.rankedProjectTitles[0]),
-      safeCell(application.rankedProjectTitles[1]),
-      safeCell(application.rankedProjectTitles[2]),
-      safeCell(application.additionalProjects),
-      safeCell(application.linkedIn),
-      safeCell(application.github),
-      safeCell(application.videoUrl),
-      safeCell(application.whyQmind),
-      safeCell(application.skillsExperience),
-      safeCell(application.funFact),
-      safeCell(application.referralSource),
-      safeCell(application.referralOther),
-      application.socialConfirmed === true,
-      safeCell(JSON.stringify(application.demographicResponses || {})),
-      application.consent === true,
-      safeCell(getResumeUrl(application)),
-    ]);
+    if (!duplicate) {
+      sheet.appendRow([
+        safeCell(application.applicationId),
+        safeCell(application.submittedAt),
+        safeCell(application.fullName),
+        safeCell(application.pronouns),
+        safeCell(application.queensEmail),
+        safeCell(application.preferredEmail),
+        safeCell(application.graduationYear),
+        safeCell(application.faculty),
+        safeCell(application.major),
+        safeCell(application.rankedProjectTitles[0]),
+        safeCell(application.rankedProjectTitles[1]),
+        safeCell(application.rankedProjectTitles[2]),
+        safeCell(application.additionalProjects),
+        safeCell(application.linkedIn),
+        safeCell(application.github),
+        safeCell(application.videoUrl),
+        safeCell(application.whyQmind),
+        safeCell(application.skillsExperience),
+        safeCell(application.funFact),
+        safeCell(application.referralSource),
+        safeCell(application.referralOther),
+        application.socialConfirmed === true,
+        safeCell(JSON.stringify(application.demographicResponses || {})),
+        application.consent === true,
+        safeCell(getResumeUrl(application)),
+      ]);
+      applicationRow = sheet.getLastRow();
+    }
 
-    // The raw Applications row is the source-of-truth export. Keep optional
-    // reviewer maintenance from turning a successful raw sync into a retry.
-    runMaintenance("resume link", function () {
-      setResumeLink(sheet, sheet.getLastRow(), getResumeUrl(application));
-    });
-    runMaintenance("review queue", function () {
-      appendReviewQueueRow(application);
-    });
-    runMaintenance("project demand", function () {
-      refreshProjectDemand();
-    });
-    runMaintenance("demographic summary", function () {
-      refreshDemographicSummary();
-    });
-
-    return jsonResponse({ ok: true });
   } catch (error) {
     return jsonResponse({ ok: false, error: String(error) });
   } finally {
     if (lock.hasLock()) lock.releaseLock();
   }
+
+  if (duplicate) return jsonResponse({ ok: true, duplicate: true });
+
+  // The raw Applications row is the source-of-truth export. Keep optional
+  // reviewer maintenance outside the submission lock so slow tab rebuilds
+  // cannot make concurrent submissions time out.
+  runMaintenance("resume link", function () {
+    setResumeLink(sheet, applicationRow, getResumeUrl(application));
+  });
+  runMaintenance("review queue", function () {
+    appendReviewQueueRow(application);
+  });
+  runMaintenance("project demand", function () {
+    refreshProjectDemand();
+  });
+  runMaintenance("demographic summary", function () {
+    refreshDemographicSummary();
+  });
+
+  return jsonResponse({ ok: true });
 }
 
 /**
@@ -386,10 +397,16 @@ function getApplicationsSheet() {
 }
 
 function runMaintenance(label, callback) {
+  let lock;
+
   try {
+    lock = LockService.getDocumentLock();
+    if (lock) lock.waitLock(10000);
     callback();
   } catch (error) {
     console.error("Careers spreadsheet maintenance failed (" + label + "): " + String(error));
+  } finally {
+    if (lock && lock.hasLock()) lock.releaseLock();
   }
 }
 
