@@ -427,6 +427,15 @@ test('recovery reads every page before replaying failed applications', async () 
   assert.deepEqual(ranges, [[0, 999], [1000, 1999]]);
 });
 
+test('recovery explains when the Supabase migration is unavailable', async () => {
+  await assert.rejects(
+    readFailedApplications({
+      rpc: async () => ({ data: null, error: { code: 'PGRST202', message: 'missing function' } }),
+    }),
+    /Apply supabase\/migrations\/careers\/202609140001_failed_application_recovery\.sql.*NOTIFY pgrst, 'reload schema'/s
+  );
+});
+
 test('webhook releases the submission lock before slow reviewer maintenance', () => {
   const context = vm.createContext({
     console: { error() {} },

@@ -377,6 +377,9 @@ Saving code in the editor does not update the production webhook by itself. Crea
    replays every failed application through the webhook and changes its
    `spreadsheet_status` to `synced` only after the webhook accepts it. It is
    safe to rerun because the webhook de-duplicates application IDs.
+   If Supabase reports that `get_failed_careers_applications` is missing, apply
+   `supabase/migrations/careers/202609140001_failed_application_recovery.sql`
+   in the SQL Editor, run `NOTIFY pgrst, 'reload schema';`, and retry.
 
 Supabase remains the source of truth if spreadsheet export fails. A failed record can be replayed without creating another database application, and Apps Script prevents duplicate spreadsheet rows using the application UUID.
 

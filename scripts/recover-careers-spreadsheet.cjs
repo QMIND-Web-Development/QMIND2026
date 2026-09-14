@@ -45,7 +45,16 @@ async function readFailedApplications(supabase) {
       ? request.range(offset, offset + RECOVERY_PAGE_SIZE - 1)
       : request;
     const { data, error } = await pageRequest;
-    if (error) throw new Error(`Could not read failed applications: ${error.message}`);
+    if (error) {
+      if (error.code === 'PGRST202') {
+        throw new Error(
+          'The recovery migration is not available to Supabase yet. Apply ' +
+          'supabase/migrations/careers/202609140001_failed_application_recovery.sql, ' +
+          "then run NOTIFY pgrst, 'reload schema'; and retry."
+        );
+      }
+      throw new Error(`Could not read failed applications: ${error.message}`);
+    }
 
     const page = data || [];
     rows.push(...page);
