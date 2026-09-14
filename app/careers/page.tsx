@@ -3,6 +3,7 @@ import { createClient, downloadImage } from "@/utils/supabase/server";
 import CareersApplication from "./CareersApplication";
 import type { HiringProject } from "./types";
 import { getDrivePreviewUrl } from "./driveVideo";
+import { shuffleProjects } from "./projectOrder";
 
 function normalizeHiringImagePath(path: string) {
   return path.replace(
@@ -31,7 +32,7 @@ export default async function CareersPage() {
     .order("projectTitle");
 
   const projects = await Promise.all(
-    ((data || []) as HiringProject[]).map(async (project) => {
+    shuffleProjects((data || []) as HiringProject[]).map(async (project) => {
       const imagePath = project.projectImages?.[0];
       const image = imagePath ? await downloadImage(normalizeHiringImagePath(imagePath)) : null;
 

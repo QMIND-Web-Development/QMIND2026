@@ -2,6 +2,16 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
+const ts = require("typescript");
+
+function loadTs(relative) {
+  const output = ts.transpileModule(fs.readFileSync(relative, "utf8"), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const module = { exports: {} };
+  new Function("module", "exports", output)(module, module.exports);
+  return module.exports;
+}
 
 const component = fs.readFileSync(
   path.join(__dirname, "..", "app", "careers", "CareersApplication.tsx"),
@@ -9,6 +19,10 @@ const component = fs.readFileSync(
 );
 const actions = fs.readFileSync(
   path.join(__dirname, "..", "app", "careers", "actions.ts"),
+  "utf8"
+);
+const careersPage = fs.readFileSync(
+  path.join(__dirname, "..", "app", "careers", "page.tsx"),
   "utf8"
 );
 
@@ -48,4 +62,14 @@ test("uses the same application field validation in the browser and on the serve
   assert.match(component, /applicationDetailsSchema\s*\.extend\(\{\s*resume: resumeSchema/);
   assert.match(actions, /applicationDetailsSchema\.extend\(\{/);
   assert.match(component, /\["demographicResponses"\]/);
+});
+
+test("shuffles the careers project order without mutating the source list", () => {
+  const { shuffleProjects } = loadTs("app/careers/projectOrder.ts");
+  const projects = [1, 2, 3, 4];
+  const shuffled = shuffleProjects(projects, () => 0);
+
+  assert.deepEqual(shuffled, [2, 3, 4, 1]);
+  assert.deepEqual(projects, [1, 2, 3, 4]);
+  assert.match(careersPage, /shuffleProjects\(\(data \|\| \[\]\) as HiringProject\[\]\)/);
 });
