@@ -352,19 +352,10 @@ test('webhook keeps a raw application sync successful when reviewer maintenance 
 });
 
 test('recovery replays failed applications and updates only successful webhook calls', async () => {
-  const rows = [{
-    id: 'application-one', submitted_at: '2026-09-09T00:00:00.000Z', full_name: 'Test Applicant',
-    pronouns: null, queens_email: 'test@queensu.ca', preferred_email: 'test@example.org',
-    graduation_year: 2028, faculty: 'Engineering', major: 'Computing', linkedin_url: null,
-    github_url: null, additional_projects: null, video_url: 'https://example.org/video',
-    why_qmind: 'A sample application response.', skills_experience: 'A sample experience response.',
-    fun_fact: 'A test fact.', referral_source: 'Other', referral_other: 'Test',
-    social_confirmed: true, demographic_responses: { firstGeneration: 'Yes' }, consent: true,
-    ranked_project_titles: ['One', 'Two', 'Three'],
-  }, {
-    id: 'application-two', submitted_at: '2026-09-09T00:01:00.000Z', full_name: 'Second Applicant',
-    ranked_project_titles: ['Four', 'Five', 'Six'], demographic_responses: {},
-  }];
+  const rows = [
+    { ...sampleApplication('application-one'), demographic_responses: { firstGeneration: 'Yes' } },
+    { ...sampleApplication('application-two'), demographic_responses: {} },
+  ];
   const sent = [];
   const updates = [];
   const errors = [];
