@@ -497,6 +497,7 @@ export default function CareersApplication({
               </Field>
               <div className={styles.prompt}>
                 <span>Submit a 1 minute video response</span>
+                <p>The video can be edited, so be as creative as you want!</p>
                 {topChoice?.promptVideoUrl && (
                   <PromptVideo key={`${topChoice.id}:${topChoice.promptVideoUrl}`} url={topChoice.promptVideoUrl} title={topChoice.projectTitle} />
                 )}
