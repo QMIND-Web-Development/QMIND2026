@@ -73,3 +73,12 @@ test("shuffles the careers project order without mutating the source list", () =
   assert.deepEqual(projects, [1, 2, 3, 4]);
   assert.match(careersPage, /shuffleProjects\(\(data \|\| \[\]\) as HiringProject\[\]\)/);
 });
+
+test("shows the closed application state after the configured closing date", () => {
+  const { areApplicationsClosed } = loadTs("app/careers/config.ts");
+
+  assert.equal(areApplicationsClosed(new Date("2026-09-18T23:59:59-04:00")), false);
+  assert.equal(areApplicationsClosed(new Date("2026-09-19T12:00:00Z")), true);
+  assert.match(careersPage, /if \(areApplicationsClosed\(\)\)/);
+  assert.match(careersPage, /APPLICATIONS_CLOSED_MESSAGE/);
+});

@@ -4,6 +4,11 @@ import CareersApplication from "./CareersApplication";
 import type { HiringProject } from "./types";
 import { getDrivePreviewUrl } from "./driveVideo";
 import { shuffleProjects } from "./projectOrder";
+import {
+  APPLICATIONS_CLOSED_MESSAGE,
+  areApplicationsClosed,
+} from "./config";
+import styles from "./careers.module.scss";
 
 function normalizeHiringImagePath(path: string) {
   return path.replace(
@@ -21,6 +26,16 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function CareersPage() {
+  if (areApplicationsClosed()) {
+    return (
+      <main id="main-content">
+        <section className={styles.closed} aria-labelledby="applications-closed-title">
+          <h1 id="applications-closed-title">{APPLICATIONS_CLOSED_MESSAGE}</h1>
+        </section>
+      </main>
+    );
+  }
+
   const supabase = createClient();
   const { data, error } = await supabase
     .from("projects")

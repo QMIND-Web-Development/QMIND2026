@@ -53,12 +53,27 @@ export const CAREERS_CONFIG = {
   // Application dates are displayed on the careers application page.
   opensOn: "September 7, 2026",
   closesOn: "September 18, 2026",
+  closesOnDate: "2026-09-18",
   resumeMaxBytes: 8 * 1024 * 1024,
   resumeTypes: [
     "application/pdf",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   ],
 } as const;
+
+export const APPLICATIONS_CLOSED_MESSAGE =
+  "Sorry, applications have closed. We hope to have you apply next year!";
+
+export function areApplicationsClosed(now = new Date()) {
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Toronto",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+
+  return today > CAREERS_CONFIG.closesOnDate;
+}
 
 export const REFERRAL_OPTIONS = [
   "Social Media",

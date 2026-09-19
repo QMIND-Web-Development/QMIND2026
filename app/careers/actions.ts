@@ -2,7 +2,11 @@
 
 import { randomUUID } from "crypto";
 import { z } from "zod";
-import { CAREERS_CONFIG } from "./config";
+import {
+  APPLICATIONS_CLOSED_MESSAGE,
+  areApplicationsClosed,
+  CAREERS_CONFIG,
+} from "./config";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { exportApplicationToSpreadsheet } from "./spreadsheet";
 import { notifySpreadsheetSyncFailure } from "./adminAlerts";
@@ -24,6 +28,10 @@ export type SubmitApplicationResult =
 type SpreadsheetStatus = "synced" | "failed" | "not_configured";
 
 export async function submitApplication(formData: FormData): Promise<SubmitApplicationResult> {
+  if (areApplicationsClosed()) {
+    return { ok: false, message: APPLICATIONS_CLOSED_MESSAGE };
+  }
+
   const rawPayload = formData.get("application");
   const resume = formData.get("resume");
 

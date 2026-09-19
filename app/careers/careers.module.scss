@@ -233,6 +233,9 @@
 .success > p:not(.kicker) { max-width: 48ch; color: var(--careers-muted); line-height: 1.6; }
 .success code { margin-top: 2rem; padding: 1rem; border: 1px solid var(--careers-line); background: var(--careers-surface); color: var(--careers-gold); overflow-wrap: anywhere; }
 
+.closed { min-height: calc(100dvh - 5rem); display: grid; place-items: center; max-width: 70rem; margin: 0 auto; padding: 4rem 1.5rem; }
+.closed h1 { max-width: 18ch; font-size: clamp(3.5rem, 8vw, 7rem); line-height: .9; letter-spacing: -.04em; text-align: center; }
+
 .page button:focus-visible, .page input:focus-visible, .page textarea:focus-visible, .page select:focus-visible { outline: 3px solid rgba(240, 181, 66, .45); outline-offset: 3px; }
 
 @media (max-width: 900px) {

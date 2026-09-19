@@ -24,6 +24,26 @@ function loadTs(relative, mocks = {}) {
   return module.exports;
 }
 
+async function withOpenApplications(callback) {
+  const RealDate = global.Date;
+  class OpenDate extends RealDate {
+    constructor(...args) {
+      super(...(args.length ? args : ['2026-09-18T12:00:00-04:00']));
+    }
+
+    static now() {
+      return RealDate.parse('2026-09-18T12:00:00-04:00');
+    }
+  }
+
+  global.Date = OpenDate;
+  try {
+    return await callback();
+  } finally {
+    global.Date = RealDate;
+  }
+}
+
 test('Next.js rejects privileged keys in the public Supabase variable', () => {
   const source = fs.readFileSync('next.config.js', 'utf8');
   const configure = (key) => {
@@ -247,7 +267,7 @@ test('public submissions use canonical project titles and atomically save privat
     const form = new FormData();
     form.set('resume', new File(['%PDF-test'], 'resume.pdf', { type: 'application/pdf' }));
     form.set('application', JSON.stringify(payload));
-    const result = await submitApplication(form);
+    const result = await withOpenApplications(() => submitApplication(form));
     assert.equal(result.ok, true);
     assert.equal(Object.hasOwn(result, 'spreadsheetStatus'), false, 'spreadsheet state is server-only');
     assert.equal(spreadsheetAttempts, 2);
@@ -331,7 +351,7 @@ test('saved applications succeed for applicants and alert admins when spreadshee
     form.set('resume', new File(['%PDF-test'], 'resume.pdf', { type: 'application/pdf' }));
     form.set('application', JSON.stringify(payload));
 
-    const result = await submitApplication(form);
+    const result = await withOpenApplications(() => submitApplication(form));
     assert.equal(result.ok, true);
     assert.equal(Object.hasOwn(result, 'spreadsheetStatus'), false);
     assert.deepEqual(savedStatuses, [{ spreadsheet_status: 'failed' }]);
