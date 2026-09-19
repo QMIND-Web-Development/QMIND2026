@@ -60,6 +60,8 @@ import CANSBRIDGE from "@/assets/memberCardImages/Cansbridge_Fellowship.png";
 import KATAROK from "@/assets/companies/Katarok.png";
 
 // Sponsor logos
+// Source: Proxmox's official media kit. The media kit permits this logo for linking to https://www.proxmox.com.
+import PROXMOX from "@/assets/companies/Proxmox.svg";
 import SMITH_ENGINEERING from "@/assets/companies/Smith_Engineering.png";
 import UOFT_CS from "@/assets/companies/UofT_CS.png";
 import COMPSA from "@/assets/companies/Compsa.png";
@@ -88,16 +90,15 @@ import EVENT_CONNECT1 from "@/assets/industry/connect_1.jpg";
 import EVENT_CONNECT2 from "@/assets/industry/connect_2.jpg";
 
 const QMIND_HALF = [
-  {fullImage: "/events/qmind1.jpg"},
-  {fullImage: "/events/qmind2.jpg"},
-  {fullImage: "/events/qmind3.jpg"},
-  {fullImage: "/events/qmind4.jpg"},
-  {fullImage: "/events/qmind5.jpg"},
-  {fullImage: "/events/qmind6.jpg"},
-
+  { fullImage: "/events/qmind1.jpg" },
+  { fullImage: "/events/qmind2.jpg" },
+  { fullImage: "/events/qmind3.jpg" },
+  { fullImage: "/events/qmind4.jpg" },
+  { fullImage: "/events/qmind5.jpg" },
+  { fullImage: "/events/qmind6.jpg" },
 ];
 
-const QMIND = [...QMIND_HALF, ...QMIND_HALF]
+const QMIND = [...QMIND_HALF, ...QMIND_HALF];
 
 const EVENTS_HALF = [
   {
@@ -215,12 +216,19 @@ const SPONSOR_TIERS = [
         logoSize: "max-h-[50%] lg:max-h-[55%]", // Deloitte slightly smaller
       },
       {
-  image: SMITH_ENGINEERING,
-  alt: "Smith Engineering Queen's University",
-  logoSize: "max-h-[70%] lg:max-h-[80%] xl:max-h-[85%]", // Increased from 60/70/75
-},
+        image: PROXMOX,
+        alt: "Proxmox",
+        //href: "https://www.proxmox.com",
+        logoSize: "max-h-[55%] lg:max-h-[65%]",
+      },
+      {
+        image: SMITH_ENGINEERING,
+        alt: "Smith Engineering Queen's University",
+        logoSize: "max-h-[70%] lg:max-h-[80%] xl:max-h-[85%]", // Increased from 60/70/75
+      },
     ],
-    gradient: "linear-gradient(180deg, #B2E1E6 0%, rgba(200, 225, 238, 0) 100%)",
+    gradient:
+      "linear-gradient(180deg, #B2E1E6 0%, rgba(200, 225, 238, 0) 100%)",
     borderColor: "#00D4FF",
     tierColor: "#B2E1E6",
   },
@@ -233,12 +241,13 @@ const SPONSOR_TIERS = [
         logoSize: "max-h-[55%] lg:max-h-[65%]",
       },
       {
-  image: COMPSA,
-  alt: "COMPSA", 
-  logoSize: "max-h-[55%] lg:max-h-[65%] pl-4 lg:pl-8",
-},
+        image: COMPSA,
+        alt: "COMPSA",
+        logoSize: "max-h-[55%] lg:max-h-[65%] pl-4 lg:pl-8",
+      },
     ],
-    gradient: "linear-gradient(180deg, #E9E9E9 0%, rgba(200, 200, 200, 0) 100%)",
+    gradient:
+      "linear-gradient(180deg, #E9E9E9 0%, rgba(200, 200, 200, 0) 100%)",
     borderColor: "#C0C0C0",
     tierColor: "#E9E9E9",
   },
@@ -251,7 +260,8 @@ const SPONSOR_TIERS = [
         logoSize: "max-h-[60%] lg:max-h-[70%]",
       },
     ],
-    gradient: "linear-gradient(180deg, #A47341 0%, rgba(197, 145, 108, 0) 100%)",
+    gradient:
+      "linear-gradient(180deg, #A47341 0%, rgba(197, 145, 108, 0) 100%)",
     borderColor: "#CD7F32",
     tierColor: "#A47341",
   },
@@ -464,7 +474,9 @@ export default function Home() {
                 <span className="text-[#F0B542]">unlock the power of AI</span>
               </h1>
               <p className="p-styles text-[18px] md:text-[20px]">
-                We are an organization of undergraduate students building, researching, and exploring artificial intelligence, machine learning, blockchain, and quantum computing. We want you to {" "}
+                We are an organization of undergraduate students building,
+                researching, and exploring artificial intelligence, machine
+                learning, blockchain, and quantum computing. We want you to{" "}
                 <a
                   href=" https://discord.gg/Hj6SMEZHBp"
                   className="underline"
@@ -475,18 +487,13 @@ export default function Home() {
                 .
               </p>
             </div>
-                          <BtnLink
-                isExternalLink={true}
-                className={`min-w-[200px] !text-[13px] justify-center ${tradeGothic.className}`}
-                text="WORK WITH US"
-                href="mailto:design@qmind.ca"
-              />
+            <BtnLink
+              isExternalLink={true}
+              className={`min-w-[200px] !text-[13px] justify-center ${tradeGothic.className}`}
+              text="WORK WITH US"
+              href="mailto:design@qmind.ca"
+            />
           </div>
-
-
-
-        
-        
 
           {/* QMIND LOGO */}
           <div className="bg-[white] lg:w-[350px] xl:w-[380px] 2xl:w-[400px]   lg:h-[350px] xl:h-[380px] 2xl:h-[400px] hidden lg:flex justify-center items-center rounded-[32px]">
@@ -501,10 +508,9 @@ export default function Home() {
           </div>
         </div>
       </Container>
-    
-    {/* qmind SLIDER*/}
-      <div className="gap-7 flex flex-col text-center relative !overflow-hidden">
 
+      {/* qmind SLIDER*/}
+      <div className="gap-7 flex flex-col text-center relative !overflow-hidden">
         <div className="flex flex-col items-start gap-[24px] w-full">
           <PicSlider cards={QMIND} slideLeft={false} />
         </div>
@@ -521,19 +527,20 @@ export default function Home() {
         </div>
       </Container>
 
-
       {/* What is QMIND? */}
       <Container className="flex flex-col items-center gap-4">
         <Title title="What is QMIND?">
           <Head3 className="text-[16px] md:text-[22px] lg:px-[40px] text-[#d0d0d0] !font-normal">
             <Text className="mt-[20px] leading-[30px] lg:leading-[40px]">
-            QMIND is Canada's largest undergraduate organization on AI. Each year we lead 250+ students on 
-            teams of 4-6 students through AI Research, AI Ethics, Computer Vision, Human-computer 
-            Interaction, Healthcare, NLP, Reinforcement Learning, and Consulting Projects, 
-            solving real world problems for industry clients. We foster students passionate about 
-            changing the world using AI and data science. We host CUCAI, Canada's largest AI conference, 
-            with 340+ delegates in 2025 and industry leading companies. 
-            We incubate startups from the ground up. We disrupt & innovate.
+              QMIND is Canada's largest undergraduate organization on AI. Each
+              year we lead 250+ students on teams of 4-6 students through AI
+              Research, AI Ethics, Computer Vision, Human-computer Interaction,
+              Healthcare, NLP, Reinforcement Learning, and Consulting Projects,
+              solving real world problems for industry clients. We foster
+              students passionate about changing the world using AI and data
+              science. We host CUCAI, Canada's largest AI conference, with 340+
+              delegates in 2025 and industry leading companies. We incubate
+              startups from the ground up. We disrupt & innovate.
             </Text>
           </Head3>
         </Title>

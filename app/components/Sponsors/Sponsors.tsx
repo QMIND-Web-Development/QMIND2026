@@ -8,6 +8,7 @@ interface SponsorTier {
   sponsors: {
     image: StaticImageData;
     alt: string;
+    href?: string;
     width?: string;
     logoSize?: string;
   }[];
@@ -56,15 +57,34 @@ const Sponsors: React.FC<SponsorsProps> = ({ tiers }) => {
                   }}
                 >
                   {/* Fixed heights at different breakpoints for better control */}
-                  <div className="relative w-full flex items-center justify-center text-center px-6 sm:px-8 lg:px-12 py-2 h-[100px] sm:h-[120px] lg:h-[140px] xl:h-[155px]">
-                    <Image
-                      src={sponsor.image}
-                      alt={sponsor.alt}
-                      className={`object-contain w-auto max-w-[85%] mx-auto ${
-                        sponsor.logoSize || 'max-h-[65%]'
-                      }`}
-                    />
-                  </div>
+                  {sponsor.href ? (
+                    <a
+                      href={sponsor.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      <div className="relative w-full flex items-center justify-center text-center px-6 sm:px-8 lg:px-12 py-2 h-[100px] sm:h-[120px] lg:h-[140px] xl:h-[155px]">
+                        <Image
+                          src={sponsor.image}
+                          alt={sponsor.alt}
+                          className={`object-contain w-auto max-w-[85%] mx-auto ${
+                            sponsor.logoSize || 'max-h-[65%]'
+                          }`}
+                        />
+                      </div>
+                    </a>
+                  ) : (
+                    <div className="relative w-full flex items-center justify-center text-center px-6 sm:px-8 lg:px-12 py-2 h-[100px] sm:h-[120px] lg:h-[140px] xl:h-[155px]">
+                      <Image
+                        src={sponsor.image}
+                        alt={sponsor.alt}
+                        className={`object-contain w-auto max-w-[85%] mx-auto ${
+                          sponsor.logoSize || 'max-h-[65%]'
+                        }`}
+                      />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

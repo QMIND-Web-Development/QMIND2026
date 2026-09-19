@@ -6,7 +6,8 @@ const vm = require('node:vm');
 const { randomUUID } = require('node:crypto');
 const ts = require('typescript');
 const { PGlite } = require('@electric-sql/pglite');
-const { buildSpreadsheetApplication, readFailedApplications, recoverFailedApplications } = require('../scripts/recover-careers-spreadsheet.cjs');
+const { backfillApplications } = require('../scripts/backfill-careers-spreadsheet.cjs');
+const { buildSpreadsheetApplication, readAllApplications, readFailedApplications, recoverFailedApplications } = require('../scripts/recover-careers-spreadsheet.cjs');
 
 function loadTs(relative, mocks = {}) {
   const filename = path.resolve(relative);
@@ -87,16 +88,18 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
         await db.exec('reset role');
       }
     }
-    assert.equal(migrations.length, 12);
-    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15);
+    assert.equal(migrations.length, 14);
+    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 16);
     await db.exec(fs.readFileSync(path.join(migrationDirectory, '202609060004_seed_2026_hiring_projects.sql'), 'utf8'));
-    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15, 'seed rerun does not duplicate projects');
+    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 16, 'seed rerun does not duplicate projects');
     await db.exec(fs.readFileSync(path.join(migrationDirectory, '202609070002_seed_additional_hiring_projects.sql'), 'utf8'));
-    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15, 'additional seed rerun does not duplicate projects');
+    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 16, 'additional seed rerun does not duplicate projects');
     await db.exec(fs.readFileSync(path.join(migrationDirectory, '202609080001_seed_final_hiring_projects.sql'), 'utf8'));
-    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15, 'final seed rerun does not duplicate projects');
+    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 16, 'final seed rerun does not duplicate projects');
     await db.exec(fs.readFileSync(path.join(migrationDirectory, '202609080002_update_wildfire_and_diffusion_projects.sql'), 'utf8'));
-    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 15, 'project update rerun does not duplicate projects');
+    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 16, 'project update rerun does not duplicate projects');
+    await db.exec(fs.readFileSync(path.join(migrationDirectory, '202609140002_seed_vehicle_telematics_modelling.sql'), 'utf8'));
+    assert.equal((await db.query('select count(*)::int as n from public.projects')).rows[0].n, 16, 'Vehicle Telematics seed rerun does not duplicate projects');
     const existing = (await db.query('select "projectImages", "githubUrl", "pmEmail" from public.projects where id = 1')).rows[0];
     assert.deepEqual(existing, { projectImages: ['keep-image'], githubUrl: 'keep-repo', pmEmail: 'owner@example.org' });
     const wildfire = (await db.query('select "fullDescription", "projectManagers" from public.projects where "projectTitle" = $1', ['Wildfire Discovery Drone'])).rows[0];
@@ -105,6 +108,10 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
     const diffusion = (await db.query('select "fullDescription", "facultyAdvisor" from public.projects where "projectTitle" = $1', ['Diffusion-Model Rendering for Re-Themable Games'])).rows[0];
     assert.match(diffusion.fullDescription, /densely factored dataset/);
     assert.equal(diffusion.facultyAdvisor, 'Robert Ciborowsko');
+    const telematics = (await db.query('select category, published, is_hiring, "projectManagers" from public.projects where "projectTitle" = $1', ['Vehicle Telematics Modelling'])).rows[0];
+    assert.deepEqual(telematics, { category: 'Consulting', published: true, is_hiring: true, projectManagers: ['James Cawse'] });
+    const telematicsPrompt = (await db.query('select prompt_text from public.hiring_project_prompts where project_id = (select id from public.projects where "projectTitle" = $1)', ['Vehicle Telematics Modelling'])).rows[0];
+    assert.deepEqual(telematicsPrompt, { prompt_text: 'What experience do you have in building projects and using AI?' });
     const prompts = (await db.query(`
       select p."projectTitle", h.prompt_text
       from public.projects p
@@ -134,9 +141,10 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
       for (const sql of [
         "select public.save_careers_application('{}', '{}')",
         "select * from public.get_failed_careers_applications()",
+        "select * from public.get_all_careers_applications()",
       ]) await assert.rejects(db.query(sql), /permission denied/);
       const prompts = (await db.query('select project_id from public.hiring_project_prompts')).rows;
-      assert.equal(prompts.length, 13);
+      assert.equal(prompts.length, 14);
       assert.ok(prompts.every((row) => ![1, 2].includes(Number(row.project_id))));
       assert.deepEqual((await db.query('select name from storage.objects')).rows, [{ name: 'public.png' }], 'restrictive policy defeats pre-existing broad access');
       await assert.rejects(db.query(`insert into storage.objects values ('${randomUUID()}', 'application-resumes', 'attack.pdf')`), /row-level security/);
@@ -156,6 +164,10 @@ test('all PR migrations execute and enforce data, RPC, prompt, and storage permi
     assert.equal(recoveryRows.length, 1);
     assert.equal(recoveryRows[0].application.id, application.id);
     assert.deepEqual(recoveryRows[0].application.demographic_responses, { firstGeneration: 'Yes' });
+    const allRows = (await db.query('select public.get_all_careers_applications() as application')).rows;
+    const allApplication = allRows.find((row) => row.application.id === application.id);
+    assert.ok(allApplication);
+    assert.deepEqual(allApplication.application.demographic_responses, { firstGeneration: 'Yes' });
     const invalid = sampleApplication();
     await assert.rejects(db.query('select public.save_careers_application($1::jsonb, $2::jsonb)', [JSON.stringify(invalid), '[]']), /check constraint/);
     assert.equal((await db.query('select * from public.applications where id=$1', [invalid.id])).rows.length, 0, 'private failure rolls application back');
@@ -502,6 +514,76 @@ test('recovery reads every page before replaying failed applications', async () 
   ];
   const ranges = [];
   const rows = await readFailedApplications({
+    rpc: () => ({
+      range: async (from, to) => {
+        ranges.push([from, to]);
+        return { data: pages[ranges.length - 1], error: null };
+      },
+    }),
+  });
+
+  assert.equal(rows.length, 1001);
+  assert.deepEqual(ranges, [[0, 999], [1000, 1999]]);
+});
+
+test('spreadsheet backfill replays synced and failed applications idempotently', async () => {
+  const rows = [
+    { ...sampleApplication('application-present'), spreadsheet_status: 'synced', demographic_responses: {} },
+    { ...sampleApplication('application-missing'), spreadsheet_status: 'synced', demographic_responses: { firstGeneration: 'Yes' } },
+  ];
+  const sent = [];
+  const updates = [];
+  const errors = [];
+  const supabase = {
+    rpc: () => ({ data: rows, error: null }),
+    from: () => ({
+      update: (values) => ({
+        eq: async (field, value) => {
+          assert.equal(field, 'id');
+          updates.push({ values, value });
+          return { error: null };
+        },
+      }),
+    }),
+  };
+  let fetchCount = 0;
+  const fetchImpl = async (_url, options) => {
+    sent.push(JSON.parse(options.body).application);
+    fetchCount += 1;
+    return fetchCount === 1
+      ? { ok: true, status: 200, json: async () => ({ ok: true, duplicate: true }) }
+      : { ok: true, status: 200, json: async () => ({ ok: true }) };
+  };
+
+  const summary = await backfillApplications({
+    supabase,
+    webhookUrl: 'https://example.org/webhook',
+    webhookSecret: 'test-secret',
+    siteUrl: 'https://www.qmind.ca',
+    fetchImpl,
+    sleepImpl: async () => {},
+    logError: (message) => errors.push(message),
+  });
+
+  assert.deepEqual(summary, { found: 2, added: 1, existing: 1, failed: 0 });
+  assert.deepEqual(updates, [
+    { values: { spreadsheet_status: 'synced' }, value: 'application-present' },
+    { values: { spreadsheet_status: 'synced' }, value: 'application-missing' },
+  ]);
+  assert.equal(errors.length, 0);
+  assert.equal(sent[1].applicationId, 'application-missing');
+  assert.deepEqual(sent[1].demographicResponses, { firstGeneration: 'Yes' });
+  assert.equal(Object.hasOwn(sent[1], 'resumeStoragePath'), false);
+  assert.equal(Object.hasOwn(sent[1], 'resume_storage_path'), false);
+});
+
+test('spreadsheet backfill reads every application page', async () => {
+  const pages = [
+    Array.from({ length: 1000 }, (_, index) => ({ id: `application-${index}` })),
+    [{ id: 'application-1000' }],
+  ];
+  const ranges = [];
+  const rows = await readAllApplications({
     rpc: () => ({
       range: async (from, to) => {
         ranges.push([from, to]);

@@ -376,7 +376,7 @@ is a credential: do not commit it, expose it to the browser, or include it in
 logs. The careers submission action posts only the application ID, retry count,
 safe failure category, and recovery command to this channel.
 
-### Failed spreadsheet exports
+### Spreadsheet recovery and backfill
 
 1. Check `applications.spreadsheet_status`.
 2. Confirm both Google environment variables loaded.
@@ -393,6 +393,15 @@ safe failure category, and recovery command to this channel.
    If Supabase reports that `get_failed_careers_applications` is missing, apply
    `supabase/migrations/careers/202609140001_failed_application_recovery.sql`
    in the SQL Editor, run `NOTIFY pgrst, 'reload schema';`, and retry.
+
+If the database says an application is `synced` but its row is missing from the
+workbook, apply
+`supabase/migrations/careers/202609170001_all_careers_spreadsheet_backfill.sql`,
+reload the Supabase schema, and run `npm run careers:backfill` from a trusted
+server or administrator workstation. The command replays every application;
+the webhook de-duplicates IDs already present in `Applications` and appends
+only missing rows. It reports the number found, added, already present, and
+failed, and is safe to rerun.
 
 When `DISCORD_CAREERS_ALERT_WEBHOOK_URL` is configured, a failed export also
 posts an admin-only alert containing the application ID, attempt count, safe

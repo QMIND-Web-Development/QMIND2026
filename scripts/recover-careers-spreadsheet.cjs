@@ -34,12 +34,12 @@ function sleep(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-async function readFailedApplications(supabase) {
+async function readApplications(supabase, rpcName, missingMigrationMessage) {
   const rows = [];
   let offset = 0;
 
   while (true) {
-    const request = supabase.rpc('get_failed_careers_applications');
+    const request = supabase.rpc(rpcName);
     const canPaginate = typeof request.range === 'function';
     const pageRequest = canPaginate
       ? request.range(offset, offset + RECOVERY_PAGE_SIZE - 1)
@@ -47,13 +47,9 @@ async function readFailedApplications(supabase) {
     const { data, error } = await pageRequest;
     if (error) {
       if (error.code === 'PGRST202') {
-        throw new Error(
-          'The recovery migration is not available to Supabase yet. Apply ' +
-          'supabase/migrations/careers/202609140001_failed_application_recovery.sql, ' +
-          "then run NOTIFY pgrst, 'reload schema'; and retry."
-        );
+        throw new Error(missingMigrationMessage);
       }
-      throw new Error(`Could not read failed applications: ${error.message}`);
+      throw new Error(`Could not read applications: ${error.message}`);
     }
 
     const page = data || [];
@@ -65,7 +61,27 @@ async function readFailedApplications(supabase) {
   return rows;
 }
 
-async function postToWebhook({ application, webhookUrl, webhookSecret, fetchImpl, sleepImpl }) {
+function readFailedApplications(supabase) {
+  return readApplications(
+    supabase,
+    'get_failed_careers_applications',
+    'The recovery migration is not available to Supabase yet. Apply ' +
+      'supabase/migrations/careers/202609140001_failed_application_recovery.sql, ' +
+      "then run NOTIFY pgrst, 'reload schema'; and retry."
+  );
+}
+
+function readAllApplications(supabase) {
+  return readApplications(
+    supabase,
+    'get_all_careers_applications',
+    'The spreadsheet backfill migration is not available to Supabase yet. Apply ' +
+      'supabase/migrations/careers/202609170001_all_careers_spreadsheet_backfill.sql, ' +
+      "then run NOTIFY pgrst, 'reload schema'; and retry."
+  );
+}
+
+async function postToWebhook({ application, webhookUrl, webhookSecret, fetchImpl, sleepImpl = sleep }) {
   let lastError;
 
   for (let attempt = 0; attempt < RECOVERY_ATTEMPTS; attempt += 1) {
@@ -80,7 +96,7 @@ async function postToWebhook({ application, webhookUrl, webhookSecret, fetchImpl
 
       if (!response.ok) throw new Error(`Webhook returned HTTP ${response.status}`);
       if (!result.ok) throw new Error(result.error || 'Webhook rejected the application');
-      return;
+      return result;
     } catch (error) {
       lastError = error;
       if (attempt + 1 < RECOVERY_ATTEMPTS) await sleepImpl(RETRY_DELAY_MS);
@@ -169,4 +185,10 @@ if (require.main === module) {
   });
 }
 
-module.exports = { buildSpreadsheetApplication, readFailedApplications, recoverFailedApplications };
+module.exports = {
+  buildSpreadsheetApplication,
+  postToWebhook,
+  readAllApplications,
+  readFailedApplications,
+  recoverFailedApplications,
+};
