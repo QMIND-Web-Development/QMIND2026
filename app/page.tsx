@@ -62,6 +62,8 @@ import KATAROK from "@/assets/companies/Katarok.png";
 // Sponsor logos
 // Source: Proxmox's official media kit. The media kit permits this logo for linking to https://www.proxmox.com.
 import PROXMOX from "@/assets/companies/Proxmox.svg";
+import DISTRIBUTIVE from "@/assets/companies/Distributive.png";
+import NATIONAL_BANK from "@/assets/companies/National_Bank.png";
 import SMITH_ENGINEERING from "@/assets/companies/Smith_Engineering.png";
 import UOFT_CS from "@/assets/companies/UofT_CS.png";
 import COMPSA from "@/assets/companies/Compsa.png";
@@ -211,11 +213,6 @@ const SPONSOR_TIERS = [
     tier: "DIAMOND TIER",
     sponsors: [
       {
-        image: DELOITTE_WHITE,
-        alt: "Deloitte",
-        logoSize: "max-h-[50%] lg:max-h-[55%]", // Deloitte slightly smaller
-      },
-      {
         image: PROXMOX,
         alt: "Proxmox",
         //href: "https://www.proxmox.com",
@@ -233,6 +230,20 @@ const SPONSOR_TIERS = [
     tierColor: "#B2E1E6",
   },
   {
+    tier: "GOLD TIER",
+    sponsors: [
+      {
+        image: DISTRIBUTIVE,
+        alt: "Distributive",
+        logoSize: "max-h-[40%] lg:max-h-[45%]",
+      },
+    ],
+    gradient:
+      "linear-gradient(180deg, #E6C65C 0%, rgba(230, 198, 92, 0) 100%)",
+    borderColor: "#FFD700",
+    tierColor: "#E6C65C",
+  },
+  {
     tier: "SILVER TIER",
     sponsors: [
       {
@@ -244,6 +255,11 @@ const SPONSOR_TIERS = [
         image: COMPSA,
         alt: "COMPSA",
         logoSize: "max-h-[55%] lg:max-h-[65%] pl-4 lg:pl-8",
+      },
+      {
+        image: NATIONAL_BANK,
+        alt: "National Bank of Canada Capital Markets",
+        logoSize: "max-h-[55%] lg:max-h-[65%]",
       },
     ],
     gradient:
